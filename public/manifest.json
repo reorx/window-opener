@@ -14,7 +14,9 @@
   "action": {
     "default_title": "Open a window"
   },
+  "options_page": "options.html",
   "permissions": [
+    "storage",
     "tabs",
     "activeTab"
   ]

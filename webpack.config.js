@@ -14,12 +14,21 @@ const common = {
   entry: {
     // background keeps the extension auto reloading, please don't remove it
     background: path.join(srcDir, 'background.ts'),
-    popup: path.join(srcDir, 'popup.ts'),
-    options: path.join(srcDir, 'options.ts'),
+    popup: path.join(srcDir, 'popup.tsx'),
+    options: path.join(srcDir, 'options.tsx'),
   },
   output: {
     path: destDir,
     filename: 'js/[name].js',
+  },
+  optimization: {
+    // https://webpack.js.org/plugins/split-chunks-plugin/
+    splitChunks: {
+        name: "vendor",
+        chunks(chunk) {
+          return chunk.name !== 'background';
+        }
+    },
   },
   module: {
     rules: [
@@ -82,6 +91,7 @@ function developmentConfig() {
       new ExtReloader({
         entries: {
           background: 'background',
+          extensionPage: ['options'],
         },
       }),
       new webpack.DefinePlugin({

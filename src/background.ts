@@ -15,6 +15,7 @@ chrome.action.onClicked.addListener(async () => {
     screenWidth: 2560,
     screenHeight: 1440,
     xOffset: 58,
+    yOffset: 0,
   }
 
   const windowArgs = {
