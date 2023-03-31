@@ -1,0 +1,21 @@
+{
+  "manifest_version": 3,
+  "name": "Window Opener",
+  "description": "Open a window with customized size and position in one click",
+  "version": "1.0",
+  "icons": {
+    "16": "icon.png",
+    "48": "icon.png",
+    "128": "icon.png"
+  },
+  "background": {
+    "service_worker": "js/background.js"
+  },
+  "action": {
+    "default_title": "Open a window"
+  },
+  "permissions": [
+    "tabs",
+    "activeTab"
+  ]
+}
