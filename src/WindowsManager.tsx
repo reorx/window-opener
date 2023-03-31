@@ -101,6 +101,12 @@ interface WindowItemProps {
 }
 
 const WindowItem = ({data, defaultId, onDataChanged, onDelete}: WindowItemProps) => {
+  let dataError = ''
+  if (!data.url) {
+    dataError = 'URL is required'
+  } else if (!data.url.match(/^\w+:\/\//)) {
+    dataError = 'Invalid URL format'
+  }
   return (
     <div css={css`
       border: 1px solid #aaa;
@@ -189,6 +195,14 @@ const WindowItem = ({data, defaultId, onDataChanged, onDelete}: WindowItemProps)
       <div>
         <button onClick={() => onDelete(data)}>Delete</button>
       </div>
+      {dataError && (
+        <div css={css`
+          color: #c00a0d;
+          background-color: #eebebe;
+          padding: 8px;
+          margin-top: 8px;
+        `}>{dataError}</div>
+      )}
     </div>
   )
 }
