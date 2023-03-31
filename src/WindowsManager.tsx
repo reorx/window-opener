@@ -13,11 +13,12 @@ interface WindowData {
 }
 
 interface WindowsManagerProps {
-  windows: any[];
-  onWindowsChange: (windows: any[]) => void;
+  windows: WindowData[];
+  onWindowsChange: (windows: WindowData[]) => void;
 }
 
 export const WindowsManager = ({windows, onWindowsChange}: WindowsManagerProps) => {
+  const defaultId = windows.find(item => item.default)?.id
   return (
     <div css={css`
       max-width: 500px;
@@ -27,6 +28,7 @@ export const WindowsManager = ({windows, onWindowsChange}: WindowsManagerProps) 
           <WindowItem
             key={item.id}
             data={item}
+            defaultId={defaultId}
             onDataChanged={(data) => {
               // console.log('onDataChanged', data)
               Object.assign(item, data);
@@ -93,11 +95,12 @@ const rowCols2 = css`
 
 interface WindowItemProps {
   data: WindowData;
+  defaultId?: string;
   onDataChanged: (data: WindowData) => void;
   onDelete: (data: WindowData) => void;
 }
 
-const WindowItem = ({data, onDataChanged, onDelete}: WindowItemProps) => {
+const WindowItem = ({data, defaultId, onDataChanged, onDelete}: WindowItemProps) => {
   return (
     <div css={css`
       border: 1px solid #aaa;
@@ -122,6 +125,7 @@ const WindowItem = ({data, onDataChanged, onDelete}: WindowItemProps) => {
           <label>Default:</label>
           <input type="checkbox" name="default"
             defaultChecked={data.default}
+            disabled={!!defaultId && defaultId !== data.id}
             onChange={e => onDataChanged({
               ...data,
               default: e.target.checked,

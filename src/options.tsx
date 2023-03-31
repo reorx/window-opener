@@ -37,7 +37,7 @@ const Options = () => {
   return (
     <div>
       <h2>General</h2>
-      <label>Click on icon behavior:</label>
+      <label>Icon action:</label>
       <br />
       <label>
         <input
