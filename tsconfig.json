@@ -11,6 +11,7 @@
     "experimentalDecorators": true,
     "useDefineForClassFields": true,
     "jsx": "react-jsx",
+    "jsxImportSource": "@emotion/react",
 
     // Required for tsconfig-paths-webpack-plugin
     // "baseUrl": ".",

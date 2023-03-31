@@ -1,3 +1,6 @@
+import { css } from '@emotion/react';
+
+
 interface WindowData {
   id: string;
   url: string;
@@ -16,14 +19,16 @@ interface WindowsManagerProps {
 
 export const WindowsManager = ({windows, onWindowsChange}: WindowsManagerProps) => {
   return (
-    <div>
+    <div css={css`
+      max-width: 500px;
+    `}>
       <div>
         {windows.map(item => (
           <WindowItem
             key={item.id}
             data={item}
             onDataChanged={(data) => {
-              console.log('onDataChanged', data)
+              // console.log('onDataChanged', data)
               Object.assign(item, data);
               onWindowsChange(windows)
             }}
@@ -55,6 +60,37 @@ export const WindowsManager = ({windows, onWindowsChange}: WindowsManagerProps) 
   )
 }
 
+const inputItem = css`
+  flex-grow: 1;
+  display: flex;
+  align-items: center;
+  label {
+    margin-inline-end: 5px;
+    width: 50px;
+    text-align: right;
+  }
+  input[type=text] {
+    display: block;
+    flex-grow: 1;
+    padding: 2px;
+  }
+  input[type=checkbox] {
+    margin: 0;
+  }
+`
+
+const rowFullWidth = css`
+  display: flex;
+  margin-bottom: 8px;
+`
+
+const rowCols2 = css`
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+  margin-bottom: 8px;
+`
+
 interface WindowItemProps {
   data: WindowData;
   onDataChanged: (data: WindowData) => void;
@@ -63,9 +99,13 @@ interface WindowItemProps {
 
 const WindowItem = ({data, onDataChanged, onDelete}: WindowItemProps) => {
   return (
-    <div>
-      <div>
-        <div>
+    <div css={css`
+      border: 1px solid #aaa;
+      padding: 10px;
+      margin-bottom: 15px;
+    `}>
+      <div css={rowFullWidth}>
+        <div css={inputItem}>
           <label>URL:</label>
           <input type="text" name="url"
             defaultValue={data.url}
@@ -77,8 +117,8 @@ const WindowItem = ({data, onDataChanged, onDelete}: WindowItemProps) => {
         </div>
       </div>
 
-      <div>
-        <div>
+      <div css={rowCols2}>
+        <div css={inputItem}>
           <label>Default:</label>
           <input type="checkbox" name="default"
             defaultChecked={data.default}
@@ -88,7 +128,7 @@ const WindowItem = ({data, onDataChanged, onDelete}: WindowItemProps) => {
             })}
           />
         </div>
-        <div>
+        <div css={inputItem}>
           <label>Focused:</label>
           <input type="checkbox" name="focused"
             defaultChecked={data.focused}
@@ -100,8 +140,8 @@ const WindowItem = ({data, onDataChanged, onDelete}: WindowItemProps) => {
         </div>
       </div>
 
-      <div>
-        <div>
+      <div css={rowCols2}>
+        <div css={inputItem}>
           <label>Left:</label>
           <input type="text" name="left"
             defaultValue={data.left}
@@ -111,7 +151,7 @@ const WindowItem = ({data, onDataChanged, onDelete}: WindowItemProps) => {
             })}
           />
         </div>
-        <div>
+        <div css={inputItem}>
           <label>Top:</label>
           <input type="text" name="top"
             defaultValue={data.top}
@@ -121,7 +161,7 @@ const WindowItem = ({data, onDataChanged, onDelete}: WindowItemProps) => {
             })}
           />
         </div>
-        <div>
+        <div css={inputItem}>
           <label>Width:</label>
           <input type="text" name="width"
             defaultValue={data.width}
@@ -131,7 +171,7 @@ const WindowItem = ({data, onDataChanged, onDelete}: WindowItemProps) => {
             })}
           />
         </div>
-        <div>
+        <div css={inputItem}>
           <label>Height:</label>
           <input type="text" name="height"
             defaultValue={data.height}

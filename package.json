@@ -12,6 +12,7 @@
   "author": "Reorx <novoreorx@gmail.com>",
   "license": "MIT",
   "dependencies": {
+    "@emotion/react": "^11.10.6",
     "chalk": "^5.0.1",
     "loglevel": "^1.8.0",
     "loglevel-plugin-prefix": "^0.8.4",
