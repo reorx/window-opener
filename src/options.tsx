@@ -2,6 +2,7 @@ import React, { ChangeEvent } from 'react';
 import { createRoot } from 'react-dom/client';
 
 import { IconAction, useSettingsStore } from './store';
+import { setActionBehavior } from './utils/action';
 import { colors, getLogger } from './utils/log';
 import { WindowsManager } from './WindowsManager';
 
@@ -28,6 +29,11 @@ const Options = () => {
     setSettingsSingle(name, value);
   }
 
+  const handleIconActionChange = (e: ChangeEvent<HTMLInputElement>) => {
+    setActionBehavior(e.target.value as IconAction)
+    handleValueChange(e)
+  }
+
   if (!isInitialStateResolved) {
     return (
       <div>loading</div>
@@ -42,8 +48,9 @@ const Options = () => {
       <label>
         <input
           type="radio"
+          name="iconAction"
           value={IconAction.defaultWindow}
-          onChange={handleValueChange}
+          onChange={handleIconActionChange}
           checked={settings.iconAction === IconAction.defaultWindow}
         />
         Open Default Window
@@ -52,8 +59,9 @@ const Options = () => {
       <label>
         <input
           type="radio"
+          name="iconAction"
           value={IconAction.windowList}
-          onChange={handleValueChange}
+          onChange={handleIconActionChange}
           checked={settings.iconAction === IconAction.windowList}
         />
         Open Windows List
