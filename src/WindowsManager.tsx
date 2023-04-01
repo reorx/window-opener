@@ -4,12 +4,14 @@ import { css } from '@emotion/react';
 interface WindowData {
   id: string;
   url: string;
-  default: boolean;
+  type: string;
   focused: boolean;
+  default: boolean;
   left: string;
   top: string;
   width: string;
   height: string;
+  context: Context;
 }
 
 interface WindowsManagerProps {
@@ -21,7 +23,7 @@ export const WindowsManager = ({windows, onWindowsChange}: WindowsManagerProps) 
   const defaultId = windows.find(item => item.default)?.id
   return (
     <div css={css`
-      max-width: 500px;
+      max-width: 700px;
     `}>
       <div>
         {windows.map(item => (
@@ -46,12 +48,14 @@ export const WindowsManager = ({windows, onWindowsChange}: WindowsManagerProps) 
             const win: WindowData = {
               id: new Date().getTime().toString(),
               url: '',
-              default: false,
+              type: 'normal',
               focused: false,
+              default: false,
               left: '',
               top: '',
               width: '',
               height: '',
+              context: getContext(),
             }
             windows.push(win)
             onWindowsChange(windows)
@@ -86,11 +90,20 @@ const rowFullWidth = css`
   margin-bottom: 8px;
 `
 
-const rowCols2 = css`
+const rowCols = css`
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
   gap: 8px;
   margin-bottom: 8px;
+`
+const cols2 = css`
+  grid-template-columns: repeat(2, 1fr);
+`
+
+const cols3 = css`
+  grid-template-columns: repeat(3, 1fr);
+`
+const cols4 = css`
+  grid-template-columns: repeat(4, 1fr);
 `
 
 interface WindowItemProps {
@@ -106,6 +119,9 @@ const WindowItem = ({data, defaultId, onDataChanged, onDelete}: WindowItemProps)
     dataError = 'URL is required'
   } else if (!data.url.match(/^\w+:\/\//)) {
     dataError = 'Invalid URL format'
+  }
+  if (!data.context) {
+    data.context = getContext()
   }
   return (
     <div css={css`
@@ -126,17 +142,21 @@ const WindowItem = ({data, defaultId, onDataChanged, onDelete}: WindowItemProps)
         </div>
       </div>
 
-      <div css={rowCols2}>
+      <div css={[rowCols, cols4]}>
         <div css={inputItem}>
-          <label>Default:</label>
-          <input type="checkbox" name="default"
-            defaultChecked={data.default}
-            disabled={!!defaultId && defaultId !== data.id}
+          <label>Type:</label>
+          <select
+            defaultValue={data.type}
             onChange={e => onDataChanged({
               ...data,
-              default: e.target.checked,
+              type: e.target.value,
             })}
-          />
+          >
+            <option value="normal">Normal</option>
+            <option value="popup">Popup</option>
+          </select>
+        </div>
+        <div css={inputItem}>
         </div>
         <div css={inputItem}>
           <label>Focused:</label>
@@ -148,9 +168,20 @@ const WindowItem = ({data, defaultId, onDataChanged, onDelete}: WindowItemProps)
             })}
           />
         </div>
+        <div css={inputItem}>
+          <label>Default:</label>
+          <input type="checkbox" name="default"
+            defaultChecked={data.default}
+            disabled={!!defaultId && defaultId !== data.id}
+            onChange={e => onDataChanged({
+              ...data,
+              default: e.target.checked,
+            })}
+          />
+        </div>
       </div>
 
-      <div css={rowCols2}>
+      <div css={[rowCols, cols2]}>
         <div css={inputItem}>
           <label>Left:</label>
           <input type="text" name="left"
@@ -192,17 +223,114 @@ const WindowItem = ({data, defaultId, onDataChanged, onDelete}: WindowItemProps)
           />
         </div>
       </div>
-      <div>
-        <button onClick={() => onDelete(data)}>Delete</button>
+
+      <div css={css`
+        color: #666;
+        background-color: #eee;
+        padding: 8px;
+        margin-bottom: 8px;
+      `}>
+        <div css={css`
+          margin-bottom: 8px;
+          display: flex;
+        `}>
+          <div>Context</div>
+          <button
+            css={css`
+              all: unset;
+              cursor: pointer;
+              display: block;
+              margin-left: auto;
+              &:hover {
+                color: #222;
+                text-decoration: underline;
+              }
+            `}
+            onClick={() => {
+              onDataChanged({
+                ...data,
+                context: getContext(),
+              })
+            }}
+          >(Reset)</button>
+        </div>
+        <div css={css`
+          display: flex;
+          justify-content: space-between;
+          margin-bottom: 8px;
+          * {
+            font-size: 12px;
+          }
+
+          label {
+            font-family: monospace;
+            margin-bottom: 3px;
+            display: block;
+          }
+
+          input {
+            border: none;
+            outline: none;
+            border-bottom: 1px solid #aaa;
+            width: 50px;
+            padding: 2px;
+          }
+        `}>{contextKeys.map(key => (
+          <div key={key} css={css`
+          `}>
+            <label>{key}</label>
+            <input type="number" name={key}
+              defaultValue={data.context[key]}
+              onChange={e => onDataChanged({
+                ...data,
+                context: {
+                  ...data.context,
+                  [key]: e.target.value,
+                } as Context,
+              })}
+            />
+          </div>))}
+        </div>
       </div>
+
       {dataError && (
         <div css={css`
           color: #c00a0d;
           background-color: #eebebe;
           padding: 8px;
-          margin-top: 8px;
+          margin-bottom: 8px;
         `}>{dataError}</div>
       )}
+      <div>
+        <button onClick={() => onDelete(data)}>Delete</button>
+      </div>
     </div>
   )
+}
+
+
+interface Context {
+  windowWidth: number;
+  windowHeight: number;
+  screenWidth: number;
+  screenHeight: number;
+  xOffset: number;
+  yOffset: number;
+  [key: string]: number;
+}
+
+const contextKeys = ['windowWidth', 'windowHeight', 'screenWidth', 'screenHeight', 'xOffset', 'yOffset']
+
+function getContext(): Context {
+  const [windowWidth, windowHeight] = [window.outerWidth, window.outerHeight];
+  const [screenWidth, screenHeight] = [window.screen.width, window.screen.height];
+  const [xOffset, yOffset] = [screenWidth - window.screen.availWidth, screenHeight - window.screen.availHeight];
+  return {
+    windowWidth,
+    windowHeight,
+    screenWidth,
+    screenHeight,
+    xOffset,
+    yOffset,
+  }
 }
