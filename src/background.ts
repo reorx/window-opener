@@ -1,5 +1,5 @@
 import { getSettings, IconAction } from './store';
-import { setActionBehavior } from './utils/action';
+import { openOptionsPage, setActionBehavior } from './utils/action';
 import { colors, getLogger } from './utils/log';
 import { openWindow } from './window';
 
@@ -26,6 +26,9 @@ chrome.action.onClicked.addListener(async () => {
       const defaultWindow = settings.windows.find(w => w.default)
       if (defaultWindow) {
         openWindow(defaultWindow)
+      } else {
+        // open options
+        openOptionsPage()
       }
       break
   }

@@ -5,6 +5,7 @@ import { css } from '@emotion/react';
 
 import { useSettingsStore } from './store';
 import { textButton, themeColor } from './styles';
+import { openOptionsPage } from './utils/action';
 import { colors, getLogger } from './utils/log';
 import { openWindow, WindowData } from './window';
 
@@ -38,11 +39,7 @@ const Popup = () => {
         padding: 5px;
       `}>
         <button css={textButton}
-          onClick={() => {
-            chrome.tabs.create({
-              url: 'options.html'
-            })
-          }}
+          onClick={openOptionsPage}
         >
           Settings
         </button>

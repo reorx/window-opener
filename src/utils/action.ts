@@ -13,3 +13,9 @@ export function setActionBehavior(action: IconAction) {
     })
   }
 }
+
+export function openOptionsPage() {
+  chrome.tabs.create({
+    url: 'options.html'
+  })
+}
