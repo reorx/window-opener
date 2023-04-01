@@ -14,6 +14,7 @@
   "dependencies": {
     "@emotion/react": "^11.10.6",
     "chalk": "^5.0.1",
+    "expr-eval": "^2.0.2",
     "loglevel": "^1.8.0",
     "loglevel-plugin-prefix": "^0.8.4",
     "react": "^18.2.0",

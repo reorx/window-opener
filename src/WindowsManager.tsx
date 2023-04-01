@@ -1,4 +1,5 @@
 import { css } from '@emotion/react';
+import { Parser } from 'expr-eval';
 
 
 interface WindowData {
@@ -12,7 +13,10 @@ interface WindowData {
   width: string;
   height: string;
   context: Context;
+  [key: string]: any;
 }
+
+const calKeys = ['left', 'top', 'width', 'height']
 
 interface WindowsManagerProps {
   windows: WindowData[];
@@ -23,7 +27,7 @@ export const WindowsManager = ({windows, onWindowsChange}: WindowsManagerProps) 
   const defaultId = windows.find(item => item.default)?.id
   return (
     <div css={css`
-      max-width: 700px;
+      max-width: 800px;
     `}>
       <div>
         {windows.map(item => (
@@ -152,8 +156,8 @@ const WindowItem = ({data, defaultId, onDataChanged, onDelete}: WindowItemProps)
               type: e.target.value,
             })}
           >
-            <option value="normal">Normal</option>
-            <option value="popup">Popup</option>
+            <option value="normal">normal</option>
+            <option value="popup">popup</option>
           </select>
         </div>
         <div css={inputItem}>
@@ -182,46 +186,24 @@ const WindowItem = ({data, defaultId, onDataChanged, onDelete}: WindowItemProps)
       </div>
 
       <div css={[rowCols, cols2]}>
-        <div css={inputItem}>
-          <label>Left:</label>
-          <input type="text" name="left"
-            defaultValue={data.left}
-            onChange={e => onDataChanged({
-              ...data,
-              left: e.target.value,
-            })}
-          />
-        </div>
-        <div css={inputItem}>
-          <label>Top:</label>
-          <input type="text" name="top"
-            defaultValue={data.top}
-            onChange={e => onDataChanged({
-              ...data,
-              top: e.target.value,
-            })}
-          />
-        </div>
-        <div css={inputItem}>
-          <label>Width:</label>
-          <input type="text" name="width"
-            defaultValue={data.width}
-            onChange={e => onDataChanged({
-              ...data,
-              width: e.target.value,
-            })}
-          />
-        </div>
-        <div css={inputItem}>
-          <label>Height:</label>
-          <input type="text" name="height"
-            defaultValue={data.height}
-            onChange={e => onDataChanged({
-              ...data,
-              height: e.target.value,
-            })}
-          />
-        </div>
+        {calKeys.map(key => (
+          <div css={inputItem}>
+            <label>{key}:</label>
+            <input type="text" name={key}
+              defaultValue={data[key]}
+              onChange={e => onDataChanged({
+                ...data,
+                [key]: e.target.value,
+              })}
+            />
+            <div css={css`
+              padding: 0 5px;
+            `}>=</div>
+            <div css={css`
+              width: 40px;
+            `}>{calFigure(data, key)}</div>
+          </div>
+        ))}
       </div>
 
       <div css={css`
@@ -332,5 +314,15 @@ function getContext(): Context {
     screenHeight,
     xOffset,
     yOffset,
+  }
+}
+
+const exprParser = new Parser
+
+function calFigure(data: WindowData, key: string) {
+  try {
+    return exprParser.parse(data[key]).evaluate(data.context)
+  } catch (err) {
+    return NaN
   }
 }

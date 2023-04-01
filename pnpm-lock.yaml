@@ -7,6 +7,9 @@ dependencies:
   chalk:
     specifier: ^5.0.1
     version: 5.0.1
+  expr-eval:
+    specifier: ^2.0.2
+    version: 2.0.2
   loglevel:
     specifier: ^1.8.0
     version: 1.8.0
@@ -3089,6 +3092,10 @@ packages:
       signal-exit: 3.0.7
       strip-final-newline: 2.0.0
     dev: true
+
+  /expr-eval@2.0.2:
+    resolution: {integrity: sha512-4EMSHGOPSwAfBiibw3ndnP0AvjDWLsMvGOvWEZ2F96IGk0bIVdjQisOHxReSkE13mHcfbuCiXw+G4y0zv6N8Eg==}
+    dev: false
 
   /express@4.18.2:
     resolution: {integrity: sha512-5/PsL6iGPdfQ/lKM1UuielYgv3BUoJfz1aUwU9vHZ+J7gyvwdQXFEBIEIaxeGf0GIcreATNyBExtalisDbuMqQ==}
