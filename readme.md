@@ -2,6 +2,8 @@
 
 A Chrome extension for opening windows with customized size and position in one click.
 
+![](images/screenshot.png)
+
 
 ## TODO
 
