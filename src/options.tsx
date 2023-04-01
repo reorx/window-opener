@@ -1,6 +1,8 @@
 import React, { ChangeEvent } from 'react';
 import { createRoot } from 'react-dom/client';
 
+import { css } from '@emotion/react';
+
 import { IconAction, useSettingsStore } from './store';
 import { setActionBehavior } from './utils/action';
 import { colors, getLogger } from './utils/log';
@@ -41,12 +43,14 @@ const Options = () => {
   }
 
   return (
-    <div>
+    <div css={css`
+      padding: 15px;
+    `}>
       <h2>General</h2>
       <label>Icon action:</label>
       <br />
-      <label>
-        <input
+      <label htmlFor={'input-' + IconAction.defaultWindow}>
+        <input id={'input-' + IconAction.defaultWindow}
           type="radio"
           name="iconAction"
           value={IconAction.defaultWindow}

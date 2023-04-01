@@ -4,7 +4,7 @@ import { createRoot } from 'react-dom/client';
 import { css } from '@emotion/react';
 
 import { useSettingsStore } from './store';
-import { textButton } from './styles';
+import { textButton, themeColor } from './styles';
 import { colors, getLogger } from './utils/log';
 import { openWindow, WindowData } from './window';
 
@@ -62,7 +62,7 @@ const WindowItem = ({data}: {data: WindowData}) => {
         border: 1px solid transparent;
         cursor: pointer;
         &:hover {
-          border-color: #1d9bf0;
+          border-color: ${themeColor};
           background-color: #eee;
         }
       `}

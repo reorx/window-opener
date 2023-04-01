@@ -1,6 +1,6 @@
 import { css } from '@emotion/react';
 
-import { textButton } from './styles';
+import { textButton, themeColor } from './styles';
 import {
   Context, contextKeys, WindowData, windowFigureKeys, calFigure, getContext,
 } from './window';
@@ -71,6 +71,8 @@ const inputItem = css`
     display: block;
     flex-grow: 1;
     padding: 2px;
+    border: 1px solid #aaa;
+    border-radius: 2px;
   }
   input[type=checkbox] {
     margin: 0;
@@ -117,8 +119,8 @@ const WindowItem = ({data, defaultId, onDataChanged, onDelete}: WindowItemProps)
   }
   return (
     <div css={css`
-      border: 1px solid #aaa;
-      padding: 10px;
+      border: 1px solid ${data.default ? themeColor : '#aaa'};
+      padding: 15px;
       margin-bottom: 15px;
     `}>
       <div css={rowFullWidth}>
@@ -151,8 +153,8 @@ const WindowItem = ({data, defaultId, onDataChanged, onDelete}: WindowItemProps)
         <div css={inputItem}>
         </div>
         <div css={inputItem}>
-          <label>Focused:</label>
-          <input type="checkbox" name="focused"
+          <label htmlFor={data.id + "-input-focused"}>Focused:</label>
+          <input type="checkbox" name="focused" id={data.id + "-input-focused"}
             defaultChecked={data.focused}
             onChange={e => onDataChanged({
               ...data,
@@ -161,8 +163,8 @@ const WindowItem = ({data, defaultId, onDataChanged, onDelete}: WindowItemProps)
           />
         </div>
         <div css={inputItem}>
-          <label>Default:</label>
-          <input type="checkbox" name="default"
+          <label htmlFor={data.id + "-input-default"}>Default:</label>
+          <input type="checkbox" name="default" id={data.id + "-input-default"}
             defaultChecked={data.default}
             disabled={!!defaultId && defaultId !== data.id}
             onChange={e => onDataChanged({
