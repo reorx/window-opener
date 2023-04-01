@@ -17,6 +17,50 @@ export interface WindowData {
 
 export const windowFigureKeys = ['left', 'top', 'width', 'height']
 
+export function openWindow(data: WindowData) {
+  const figures = calFigures(data)
+
+  try {
+    chrome.windows.create({
+      url: data.url,
+      type: data.type as chrome.windows.createTypeEnum,
+      focused: data.focused,
+      left: figures.left,
+      top: figures.top,
+      width: figures.width,
+      height: figures.height,
+    })
+  } catch (err) {
+    // create a centered window that shows error message
+    // console.warn('openWindow error', err)
+    const context = data.context
+    const [width, height] = [600, 160]
+
+    chrome.windows.create({
+      url: `data:text/html,${createErrorHtml(err, data.url)}`,
+      type: 'popup',
+      focused: true,
+      left: (context.screenWidth - width) / 2,
+      top: (context.screenHeight - height) / 2,
+      width,
+      height,
+    })
+  }
+}
+
+function createErrorHtml(err: any, url: string) {
+  return `
+<html>
+  <head><title>Window Opener Error</title></head>
+  <body>
+    <h3>Error while opening window for ${url}</h3>
+    <code><pre style="white-space: pre-wrap">${err}</pre></code>
+  </body>
+</html>`
+}
+
+
+/* context */
 
 export interface Context {
   windowWidth: number;
@@ -30,6 +74,22 @@ export interface Context {
 
 export const contextKeys = ['windowWidth', 'windowHeight', 'screenWidth', 'screenHeight', 'xOffset', 'yOffset']
 
+export function getContext(): Context {
+  const [windowWidth, windowHeight] = [window.outerWidth, window.outerHeight];
+  const [screenWidth, screenHeight] = [window.screen.width, window.screen.height];
+  const [xOffset, yOffset] = [screenWidth - window.screen.availWidth, screenHeight - window.screen.availHeight];
+  return {
+    windowWidth,
+    windowHeight,
+    screenWidth,
+    screenHeight,
+    xOffset,
+    yOffset,
+  }
+}
+
+
+/* figures calculation */
 
 interface Figures {
   left: number;
@@ -55,20 +115,4 @@ export function calFigures(data: WindowData): Figures {
     figures[key] = calFigure(data, key)
   }
   return figures as Figures
-}
-
-/* context */
-
-export function getContext(): Context {
-  const [windowWidth, windowHeight] = [window.outerWidth, window.outerHeight];
-  const [screenWidth, screenHeight] = [window.screen.width, window.screen.height];
-  const [xOffset, yOffset] = [screenWidth - window.screen.availWidth, screenHeight - window.screen.availHeight];
-  return {
-    windowWidth,
-    windowHeight,
-    screenWidth,
-    screenHeight,
-    xOffset,
-    yOffset,
-  }
 }

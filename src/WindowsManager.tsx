@@ -1,5 +1,6 @@
 import { css } from '@emotion/react';
 
+import { textButton } from './styles';
 import {
   Context, contextKeys, WindowData, windowFigureKeys, calFigure, getContext,
 } from './window';
@@ -205,16 +206,9 @@ const WindowItem = ({data, defaultId, onDataChanged, onDelete}: WindowItemProps)
         `}>
           <div>Context</div>
           <button
-            css={css`
-              all: unset;
-              cursor: pointer;
-              display: block;
+            css={[textButton, css`
               margin-left: auto;
-              &:hover {
-                color: #222;
-                text-decoration: underline;
-              }
-            `}
+            `]}
             onClick={() => {
               onDataChanged({
                 ...data,

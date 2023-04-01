@@ -1,66 +1,80 @@
-import React, {
-  useEffect,
-  useState,
-} from 'react';
-
+import React from 'react';
 import { createRoot } from 'react-dom/client';
 
-import {
-  colors,
-  getLogger,
-} from './utils/log';
+import { css } from '@emotion/react';
+
+import { useSettingsStore } from './store';
+import { textButton } from './styles';
+import { colors, getLogger } from './utils/log';
+import { openWindow, WindowData } from './window';
+
 
 const lg = getLogger('popup', colors.bgYellowBright)
 
 lg.info('popup.ts')
 
 const Popup = () => {
-  const [count, setCount] = useState(0);
-  const [currentURL, setCurrentURL] = useState<string>();
+  const [settings, setSettings, isPersistent, error, isInitialStateResolved] = useSettingsStore();
+  const windows = settings.windows as WindowData[]
 
-  useEffect(() => {
-    chrome.action.setBadgeText({ text: count.toString() });
-  }, [count]);
-
-  useEffect(() => {
-    chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
-      setCurrentURL(tabs[0].url);
-    });
-  }, []);
-
-  const changeBackground = () => {
-    chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
-      const tab = tabs[0];
-      if (tab.id) {
-        chrome.tabs.sendMessage(
-          tab.id,
-          {
-            color: "#555555",
-          },
-          (msg) => {
-            console.log("result message:", msg);
-          }
-        );
-      }
-    });
-  };
+  if (!isInitialStateResolved) {
+    return (
+      <div>loading</div>
+    )
+  }
 
   return (
-    <>
-      <ul style={{ minWidth: "700px" }}>
-        <li>Current URL: {currentURL}</li>
-        <li>Current Time: {new Date().toLocaleTimeString()}</li>
-      </ul>
-      <button
-        onClick={() => setCount(count + 1)}
-        style={{ marginRight: "5px" }}
-      >
-        count up
-      </button>
-      <button onClick={changeBackground}>change background</button>
-    </>
-  );
+    <div>
+      <div>
+        {windows.map(item => (
+          <WindowItem key={item.id} data={item} />
+        ))}
+      </div>
+
+      <div css={css`
+        display: flex;
+        justify-content: center;
+        margin-top: 10px;
+        padding: 5px;
+      `}>
+        <button css={textButton}
+          onClick={() => {
+            chrome.tabs.create({
+              url: 'options.html'
+            })
+          }}
+        >
+          Settings
+        </button>
+      </div>
+    </div>
+  )
 };
+
+const WindowItem = ({data}: {data: WindowData}) => {
+  const domain = new URL(data.url).hostname
+  return (
+    <div
+      css={css`
+        padding: 8px 10px;
+        width: 200px;
+        font-size: 15px;
+        border: 1px solid transparent;
+        cursor: pointer;
+        &:hover {
+          border-color: #1d9bf0;
+          background-color: #eee;
+        }
+      `}
+      onClick={() => {
+        openWindow(data)
+        window.close()
+      }}
+    >
+      {domain}
+    </div>
+  )
+}
 
 const root = createRoot(document.getElementById("root")!);
 
