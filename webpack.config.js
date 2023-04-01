@@ -6,7 +6,7 @@ const { merge } = require('webpack-merge')
 
 const rootDir = path.resolve(__dirname)
 const srcDir = path.join(rootDir, 'src')
-const destDir = path.join(rootDir, 'dist')
+const destDir = path.join(rootDir, 'build')
 
 console.log('srcDir', srcDir)
 
@@ -77,6 +77,9 @@ const common = {
     new CopyPlugin({
       patterns: [{ from: path.join(rootDir, 'public'), to: destDir }],
     }),
+    new webpack.DefinePlugin({
+      'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV),
+    }),
   ],
 }
 
@@ -94,9 +97,6 @@ function developmentConfig() {
           extensionPage: ['options'],
         },
       }),
-      new webpack.DefinePlugin({
-        'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV),
-      }),
     ],
   })
 
@@ -113,11 +113,6 @@ function productionConfig() {
   console.log('production config')
   const config = merge(common, {
     mode: 'production',
-    plugins: [
-      new webpack.DefinePlugin({
-        'process.env.APP_ENV': JSON.stringify(process.env.APP_ENV),
-      }),
-    ],
   })
   return config
 }
