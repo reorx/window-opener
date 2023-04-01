@@ -1,22 +1,9 @@
 import { css } from '@emotion/react';
-import { Parser } from 'expr-eval';
 
+import {
+  Context, contextKeys, WindowData, windowFigureKeys, calFigure, getContext,
+} from './window';
 
-interface WindowData {
-  id: string;
-  url: string;
-  type: string;
-  focused: boolean;
-  default: boolean;
-  left: string;
-  top: string;
-  width: string;
-  height: string;
-  context: Context;
-  [key: string]: any;
-}
-
-const calKeys = ['left', 'top', 'width', 'height']
 
 interface WindowsManagerProps {
   windows: WindowData[];
@@ -186,8 +173,8 @@ const WindowItem = ({data, defaultId, onDataChanged, onDelete}: WindowItemProps)
       </div>
 
       <div css={[rowCols, cols2]}>
-        {calKeys.map(key => (
-          <div css={inputItem}>
+        {windowFigureKeys.map(key => (
+          <div key={key} css={inputItem}>
             <label>{key}:</label>
             <input type="text" name={key}
               defaultValue={data[key]}
@@ -288,41 +275,4 @@ const WindowItem = ({data, defaultId, onDataChanged, onDelete}: WindowItemProps)
       </div>
     </div>
   )
-}
-
-
-interface Context {
-  windowWidth: number;
-  windowHeight: number;
-  screenWidth: number;
-  screenHeight: number;
-  xOffset: number;
-  yOffset: number;
-  [key: string]: number;
-}
-
-const contextKeys = ['windowWidth', 'windowHeight', 'screenWidth', 'screenHeight', 'xOffset', 'yOffset']
-
-function getContext(): Context {
-  const [windowWidth, windowHeight] = [window.outerWidth, window.outerHeight];
-  const [screenWidth, screenHeight] = [window.screen.width, window.screen.height];
-  const [xOffset, yOffset] = [screenWidth - window.screen.availWidth, screenHeight - window.screen.availHeight];
-  return {
-    windowWidth,
-    windowHeight,
-    screenWidth,
-    screenHeight,
-    xOffset,
-    yOffset,
-  }
-}
-
-const exprParser = new Parser
-
-function calFigure(data: WindowData, key: string) {
-  try {
-    return exprParser.parse(data[key]).evaluate(data.context)
-  } catch (err) {
-    return NaN
-  }
 }

@@ -1,7 +1,7 @@
 import React, { ChangeEvent } from 'react';
 import { createRoot } from 'react-dom/client';
 
-import { ICON_ACTION_VALUES, SETTINGS_KEYS, useSettingsStore } from './settingsStore';
+import { IconAction, useSettingsStore } from './store';
 import { colors, getLogger } from './utils/log';
 import { WindowsManager } from './WindowsManager';
 
@@ -42,10 +42,9 @@ const Options = () => {
       <label>
         <input
           type="radio"
-          name={SETTINGS_KEYS.iconAction}
-          value={ICON_ACTION_VALUES.defaultWindow}
+          value={IconAction.defaultWindow}
           onChange={handleValueChange}
-          checked={settings.iconAction === ICON_ACTION_VALUES.defaultWindow}
+          checked={settings.iconAction === IconAction.defaultWindow}
         />
         Open Default Window
       </label>
@@ -53,10 +52,9 @@ const Options = () => {
       <label>
         <input
           type="radio"
-          name={SETTINGS_KEYS.iconAction}
-          value={ICON_ACTION_VALUES.windowList}
+          value={IconAction.windowList}
           onChange={handleValueChange}
-          checked={settings.iconAction === ICON_ACTION_VALUES.windowList}
+          checked={settings.iconAction === IconAction.windowList}
         />
         Open Windows List
       </label>
@@ -69,7 +67,7 @@ const Options = () => {
         windows={settings.windows}
         onWindowsChange={(windows) => {
           lg.log('onWindowsChange', windows)
-          setSettingsSingle(SETTINGS_KEYS.windows, windows);
+          setSettingsSingle('windows', windows);
         }}
       ></WindowsManager>
     </div>
