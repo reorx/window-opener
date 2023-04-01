@@ -26,5 +26,8 @@ export const useSettingsStore = createChromeStorageStateHookSync(STORAGE_KEY, IN
 
 export const getSettings = async (): Promise<Settings>  => {
   const data = await chrome.storage.sync.get(STORAGE_KEY)
-  return data[STORAGE_KEY] as Settings
+  let settings = data[STORAGE_KEY]
+  if (!settings)
+    settings = INITIAL_SETTINGS
+  return settings as Settings
 }
