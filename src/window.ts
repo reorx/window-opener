@@ -19,17 +19,15 @@ export const windowFigureKeys = ['left', 'top', 'width', 'height']
 
 export function openWindow(data: WindowData) {
   const figures = calFigures(data)
+  const createArgs = {
+    url: data.url,
+    type: data.type as chrome.windows.createTypeEnum,
+    focused: data.focused,
+    ...figures
+  }
 
   try {
-    chrome.windows.create({
-      url: data.url,
-      type: data.type as chrome.windows.createTypeEnum,
-      focused: data.focused,
-      left: figures.left,
-      top: figures.top,
-      width: figures.width,
-      height: figures.height,
-    })
+    chrome.windows.create(createArgs)
   } catch (err) {
     // create a centered window that shows error message
     // console.warn('openWindow error', err)
@@ -92,27 +90,31 @@ export function getContext(): Context {
 /* figures calculation */
 
 interface Figures {
-  left: number;
-  top: number;
-  width: number;
-  height: number;
-  [key: string]: number;
+  left?: number;
+  top?: number;
+  width?: number;
+  height?: number;
+  [key: string]: number|undefined;
 }
 
 const exprParser = new Parser
 
-export function calFigure(data: WindowData, key: string): number {
+export function calFigure(data: WindowData, key: string): number|undefined {
+  const expr = data[key]
+  if (!expr) return undefined
   try {
-    return exprParser.parse(data[key]).evaluate(data.context)
+    return exprParser.parse(expr).evaluate(data.context)
   } catch (err) {
     return NaN
   }
 }
 
 export function calFigures(data: WindowData): Figures {
-  const figures: {[key: string]: number} = {}
+  const figures: {[key: string]: number|undefined} = {}
   for (const key of windowFigureKeys) {
-    figures[key] = calFigure(data, key)
+    const v = calFigure(data, key)
+    if (v !== undefined)
+      figures[key] = v
   }
   return figures as Figures
 }

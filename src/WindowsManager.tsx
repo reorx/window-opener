@@ -191,7 +191,7 @@ const WindowItem = ({data, defaultId, onDataChanged, onDelete}: WindowItemProps)
             `}>=</div>
             <div css={css`
               width: 40px;
-            `}>{calFigure(data, key)}</div>
+            `}>{numToString(calFigure(data, key))}</div>
           </div>
         ))}
       </div>
@@ -271,4 +271,12 @@ const WindowItem = ({data, defaultId, onDataChanged, onDelete}: WindowItemProps)
       </div>
     </div>
   )
+}
+
+
+function numToString(n: number|undefined) {
+  if (n === undefined) {
+    return ''
+  }
+  return n.toString()
 }
