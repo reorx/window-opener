@@ -3,6 +3,7 @@ import { Parser } from 'expr-eval';
 
 export interface WindowData {
   id: string;
+  name: string;
   url: string;
   type: string;
   focused: boolean;

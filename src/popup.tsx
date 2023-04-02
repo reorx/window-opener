@@ -68,7 +68,16 @@ const WindowItem = ({data}: {data: WindowData}) => {
         window.close()
       }}
     >
-      {domain}
+      <div css={css`
+        .star {
+          color: ${themeColor};
+          margin-inline-start: 10px;
+        }
+      `}>{data.name}{data.default && <span className='star'>★</span>}</div>
+      <div css={css`
+        font-size: 13px;
+        color: #999;
+      `}>{domain}</div>
     </div>
   )
 }

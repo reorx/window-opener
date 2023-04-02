@@ -42,6 +42,7 @@ export const WindowsManager = ({windows, onWindowsChange}: WindowsManagerProps) 
           onClick={() => {
             const win: WindowData = {
               id: new Date().getTime().toString(),
+              name: '',
               url: '',
               type: 'normal',
               focused: false,
@@ -96,9 +97,6 @@ const cols2 = css`
   grid-template-columns: repeat(2, 1fr);
 `
 
-const cols3 = css`
-  grid-template-columns: repeat(3, 1fr);
-`
 const cols4 = css`
   grid-template-columns: repeat(4, 1fr);
 `
@@ -132,6 +130,21 @@ const WindowItem = ({data, defaultId, onDataChanged, onDelete}: WindowItemProps)
       padding: 15px;
       margin-bottom: 15px;
     `}>
+      <div css={[rowCols, cols2]}>
+        <div css={inputItem}>
+          <label>Name:</label>
+          <input type="text" name="name"
+            defaultValue={data.name}
+            onChange={e => onDataChanged({
+              ...data,
+              name: e.target.value,
+            })}
+          />
+          <div css={css`
+            width: 50px;
+          `}></div>
+        </div>
+      </div>
       <div css={rowFullWidth}>
         <div css={inputItem}>
           <label>URL:</label>
@@ -195,12 +208,13 @@ const WindowItem = ({data, defaultId, onDataChanged, onDelete}: WindowItemProps)
                 [key]: e.target.value,
               })}
             />
+
             <div css={css`
-              padding: 0 5px;
-            `}>=</div>
-            <div css={css`
-              width: 40px;
-            `}>{numToString(calFigure(data, key))}</div>
+              width: 50px;
+            `}><span css={css`
+              padding-inline-start: 5px;
+              padding-inline-end: 5px;
+            `}>=</span>{numToString(calFigure(data, key))}</div>
           </div>
         ))}
       </div>
