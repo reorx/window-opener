@@ -1,8 +1,11 @@
+import { useState } from 'react';
+
 import { css } from '@emotion/react';
 
 import { textButton, themeColor } from './styles';
 import {
-  Context, contextKeys, WindowData, windowFigureKeys, calFigure, getContext, openWindow,
+  contextKeys, WindowData, windowFigureKeys, calFigure, openWindow, getStaticContext,
+  staticContextKeys, getContext,
 } from './window';
 
 
@@ -47,7 +50,7 @@ export const WindowsManager = ({windows, onWindowsChange}: WindowsManagerProps) 
               top: '',
               width: '',
               height: '',
-              context: getContext(),
+              staticContext: getStaticContext(),
             }
             windows.push(win)
             onWindowsChange(windows)
@@ -114,9 +117,15 @@ const WindowItem = ({data, defaultId, onDataChanged, onDelete}: WindowItemProps)
   } else if (!data.url.match(/^\w+:\/\//)) {
     dataError = 'Invalid URL format'
   }
-  if (!data.context) {
-    data.context = getContext()
+  if (!data.staticContext) {
+    data.staticContext = getStaticContext()
   }
+
+  const [context, setContext] = useState(getContext(data.staticContext))
+  const getContextValue = (key: string) => {
+    return context[key]
+  }
+
   return (
     <div css={css`
       border: 1px solid ${data.default ? themeColor : '#aaa'};
@@ -180,7 +189,7 @@ const WindowItem = ({data, defaultId, onDataChanged, onDelete}: WindowItemProps)
           <div key={key} css={inputItem}>
             <label>{key}:</label>
             <input type="text" name={key}
-              defaultValue={data[key]}
+              defaultValue={(data as any)[key]}
               onChange={e => onDataChanged({
                 ...data,
                 [key]: e.target.value,
@@ -221,10 +230,15 @@ const WindowItem = ({data, defaultId, onDataChanged, onDelete}: WindowItemProps)
               margin-left: auto;
             `]}
             onClick={() => {
-              onDataChanged({
+              const newData = {
                 ...data,
-                context: getContext(),
-              })
+                staticContext: {
+                  ...data.staticContext,
+                  ...getStaticContext()
+                },
+              }
+              onDataChanged(newData)
+              setContext(getContext(newData.staticContext))
             }}
           >(Reset)</button>
         </div>
@@ -249,18 +263,26 @@ const WindowItem = ({data, defaultId, onDataChanged, onDelete}: WindowItemProps)
             width: 50px;
             padding: 2px;
           }
+          input[readonly] {
+            background-color: #fafafa;
+            color: #999;
+          }
         `}>{contextKeys.map(key => (
           <div key={key} css={css`
           `}>
             <label>{key}</label>
             <input type="number" name={key}
-              defaultValue={data.context[key]}
+              // using defaultValue causes the value not being changed when rerender,
+              // the `key` here makes sure the whole input is recreated to avoid this problem
+              key={`input-${key}-${getContextValue(key)}`}
+              readOnly={!staticContextKeys.includes(key)}
+              defaultValue={getContextValue(key)}
               onChange={e => onDataChanged({
                 ...data,
-                context: {
-                  ...data.context,
-                  [key]: e.target.value,
-                } as Context,
+                staticContext: {
+                  ...data.staticContext,
+                  [key]: parseInt(e.target.value),
+                }
               })}
             />
           </div>))}

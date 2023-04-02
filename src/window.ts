@@ -11,8 +11,7 @@ export interface WindowData {
   top: string;
   width: string;
   height: string;
-  context: Context;
-  [key: string]: any;
+  staticContext: StaticContext;
 }
 
 export const windowFigureKeys = ['left', 'top', 'width', 'height']
@@ -31,7 +30,7 @@ export function openWindow(data: WindowData) {
   } catch (err) {
     // create a centered window that shows error message
     // console.warn('openWindow error', err)
-    const context = data.context
+    const context = getContext(data.staticContext)
     const [width, height] = [600, 160]
 
     chrome.windows.create({
@@ -60,29 +59,40 @@ function createErrorHtml(err: any, url: string) {
 
 /* context */
 
-export interface Context {
-  windowWidth: number;
-  windowHeight: number;
+export interface StaticContext {
   screenWidth: number;
   screenHeight: number;
   xOffset: number;
   yOffset: number;
+}
+
+export interface Context extends StaticContext{
+  windowWidth: number;
+  windowHeight: number;
   [key: string]: number;
 }
 
-export const contextKeys = ['windowWidth', 'windowHeight', 'screenWidth', 'screenHeight', 'xOffset', 'yOffset']
 
-export function getContext(): Context {
-  const [windowWidth, windowHeight] = [window.outerWidth, window.outerHeight];
+export const staticContextKeys = ['screenWidth', 'screenHeight', 'xOffset', 'yOffset']
+export const contextKeys = ['windowWidth', 'windowHeight', ...staticContextKeys]
+
+export function getStaticContext(): StaticContext {
   const [screenWidth, screenHeight] = [window.screen.width, window.screen.height];
   const [xOffset, yOffset] = [screenWidth - window.screen.availWidth, screenHeight - window.screen.availHeight];
   return {
-    windowWidth,
-    windowHeight,
     screenWidth,
     screenHeight,
     xOffset,
     yOffset,
+  }
+}
+
+export function getContext(staticContext: StaticContext): Context {
+  const [windowWidth, windowHeight] = [window.outerWidth, window.outerHeight];
+  return {
+    windowWidth,
+    windowHeight,
+    ...staticContext
   }
 }
 
@@ -100,10 +110,10 @@ interface Figures {
 const exprParser = new Parser
 
 export function calFigure(data: WindowData, key: string): number|undefined {
-  const expr = data[key]
+  const expr = (data as any)[key]
   if (!expr) return undefined
   try {
-    return exprParser.parse(expr).evaluate(data.context)
+    return exprParser.parse(expr).evaluate(getContext(data.staticContext))
   } catch (err) {
     return NaN
   }
