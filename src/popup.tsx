@@ -7,7 +7,7 @@ import { useSettingsStore } from './store';
 import { textButton, themeColor } from './styles';
 import { openOptionsPage } from './utils/action';
 import { colors, getLogger } from './utils/log';
-import { openWindow, WindowData } from './window';
+import { createFromCurrentWindow, openWindow, WindowData } from './window';
 
 
 const lg = getLogger('popup', colors.bgYellowBright)
@@ -26,7 +26,9 @@ const Popup = () => {
 
   return (
     <div>
-      <div>
+      <div css={css`
+        padding: 10px;
+      `}>
         {windows.map(item => (
           <WindowItem key={item.id} data={item} />
         ))}
@@ -34,14 +36,35 @@ const Popup = () => {
 
       <div css={css`
         display: flex;
+        flex-direction: column;
         justify-content: center;
+        align-items: center;
         margin-top: 10px;
-        padding: 5px;
+        padding: 5px 0;
+        border-top: 1px solid #aaa;
+
+        button {
+          margin: 8px;
+        }
       `}>
         <button css={textButton}
           onClick={openOptionsPage}
         >
           Settings
+        </button>
+        <button css={textButton}
+          onClick={async () => {
+            const win = await createFromCurrentWindow()
+            setSettings(prevState => {
+              return {
+                ...prevState,
+                windows: [...prevState.windows, win],
+              }
+            })
+            openOptionsPage()
+          }}
+        >
+          Create from current window
         </button>
       </div>
     </div>
@@ -54,7 +77,8 @@ const WindowItem = ({data}: {data: WindowData}) => {
     <div
       css={css`
         padding: 8px 10px;
-        width: 200px;
+        max-width: 300px;
+        min-width: 200px;
         font-size: 15px;
         border: 1px solid transparent;
         cursor: pointer;

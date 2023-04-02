@@ -17,7 +17,7 @@ export enum IconAction {
   defaultWindow = 'defaultWindow',
 }
 
-export const INITIAL_SETTINGS = {
+export const INITIAL_SETTINGS: Settings = {
   iconAction: IconAction.defaultWindow,
   windows: [],
 }

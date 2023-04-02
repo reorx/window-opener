@@ -46,6 +46,43 @@ export function openWindow(data: WindowData) {
   }
 }
 
+export async function createFromCurrentWindow() {
+  const win = createWindow()
+
+  // get window position and size
+  const chromeWindow = await chrome.windows.getCurrent()
+  win.left = numToString(chromeWindow.left?? 0)
+  win.top = numToString(chromeWindow.top?? 0)
+  win.width = numToString(chromeWindow.width?? 0)
+  win.height = numToString(chromeWindow.height?? 0)
+
+  // get url
+  const tabs = await chrome.tabs.query({ active: true, currentWindow: true })
+  if (tabs.length > 0) {
+    const tab = tabs[0]
+    win.url = tab.url?? ''
+  }
+
+  return win
+}
+
+export function createWindow() {
+  const win: WindowData = {
+    id: new Date().getTime().toString(),
+    name: '',
+    url: '',
+    type: 'normal',
+    focused: true,
+    default: false,
+    left: '',
+    top: '',
+    width: '',
+    height: '',
+    staticContext: getStaticContext(),
+  }
+  return win
+}
+
 function createErrorHtml(err: any, url: string) {
   return `
 <html>
@@ -128,4 +165,8 @@ export function calFigures(data: WindowData): Figures {
       figures[key] = v
   }
   return figures as Figures
+}
+
+function numToString(num: number) {
+  return num.toString()
 }
