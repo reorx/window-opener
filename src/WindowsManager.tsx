@@ -2,7 +2,7 @@ import { css } from '@emotion/react';
 
 import { textButton, themeColor } from './styles';
 import {
-  Context, contextKeys, WindowData, windowFigureKeys, calFigure, getContext,
+  Context, contextKeys, WindowData, windowFigureKeys, calFigure, getContext, openWindow,
 } from './window';
 
 
@@ -266,8 +266,18 @@ const WindowItem = ({data, defaultId, onDataChanged, onDelete}: WindowItemProps)
           margin-bottom: 8px;
         `}>{dataError}</div>
       )}
-      <div>
-        <button onClick={() => onDelete(data)}>Delete</button>
+      <div css={css`
+        display: flex;
+        gap: 10px;
+      `}>
+        <button onClick={() => {
+          openWindow(data)
+        }}>Open</button>
+        <button onClick={() => {
+          if (confirm('Are you sure you want to delete this window?')) {
+            onDelete(data)
+          }
+        }}>Delete</button>
       </div>
     </div>
   )
