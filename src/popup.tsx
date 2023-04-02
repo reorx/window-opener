@@ -7,7 +7,7 @@ import { useSettingsStore } from './store';
 import { textButton, themeColor } from './styles';
 import { openOptionsPage } from './utils/action';
 import { colors, getLogger } from './utils/log';
-import { createFromCurrentWindow, openWindow, WindowData } from './window';
+import { createWindowFromCurrent, openWindow, WindowData } from './window';
 
 
 const lg = getLogger('popup', colors.bgYellowBright)
@@ -57,7 +57,7 @@ const Popup = () => {
         </button>
         <button css={textButton}
           onClick={async () => {
-            const win = await createFromCurrentWindow()
+            const win = await createWindowFromCurrent()
             setSettings(prevState => {
               return {
                 ...prevState,

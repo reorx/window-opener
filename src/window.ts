@@ -46,7 +46,7 @@ export function openWindow(data: WindowData) {
   }
 }
 
-export async function createFromCurrentWindow() {
+export async function createWindowFromCurrent() {
   const win = createWindow()
 
   // get window position and size
