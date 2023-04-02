@@ -9,7 +9,7 @@ A Chrome extension for opening windows with customized size and position in one 
 
 - [x] add "Open" button in WindowsManager
 - [x] add confirmation for "Delete" button in WindowsManager
-- [ ] add tooltip for context data
+- [x] add help message for the context variables
 - [ ] add name for windows, display name and domain in windows list in popup
 - [ ] create new window data from the current window
 - [ ] support keyboard shortcut

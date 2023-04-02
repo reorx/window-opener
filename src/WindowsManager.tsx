@@ -206,7 +206,16 @@ const WindowItem = ({data, defaultId, onDataChanged, onDelete}: WindowItemProps)
           margin-bottom: 8px;
           display: flex;
         `}>
-          <div>Context</div>
+          <div>Context
+            <button
+              css={[textButton, css`
+                margin-inline-start: 10px;
+              `]}
+              onClick={() => {
+                (document.getElementById('context-explain-modal')! as HTMLDialogElement).showModal()
+              }}
+          >(Explain)</button>
+          </div>
           <button
             css={[textButton, css`
               margin-left: auto;
@@ -279,6 +288,59 @@ const WindowItem = ({data, defaultId, onDataChanged, onDelete}: WindowItemProps)
           }
         }}>Delete</button>
       </div>
+
+      <dialog id="context-explain-modal" css={css`
+        width: 500px;
+        max-width: 90%;
+        padding: 20px;
+        padding-top: 10px;
+        font-size: 15px;
+        line-height: 1.5;
+        &::backdrop {
+          background: rgba(100, 100, 100, 0.6);
+        }
+        ul {
+          padding-left: 1.5em;
+        }
+        li {
+          margin-bottom: 3px;
+          b {
+            font-family: monospace;
+          }
+        }
+      `}>
+        <form method="dialog">
+          <div>
+            <h3>What is context and how to use it?</h3>
+            <p>
+              Context is a set of variables that can be used to calculate the actual window size and position figures (<code>left</code>, <code>top</code>, <code>width</code>, <code>height</code>). Those figures can be defined as mathmatical expressions, such as <code>(screenWidth - 700) / 2</code> or <code>screenWidth - windowWidth - xOffset</code>, the variables used in the expressions must be from the context variables.
+            </p>
+            <p>There are two types of context variables, one is dynamic, the other is static. Static variables are assigned based on the current screen when the window item is created, you can click (Reset) to reset them.</p>
+            <p><b>Here's the list of dynamic variables:</b></p>
+            <ul>
+              <li><b>windowWidth</b>: the width of the current window, useful if you want to open the window in a relative position.</li>
+              <li><b>windowHeight</b>: the height of the current window.</li>
+            </ul>
+            <p><b>Here's the list of static variables:</b></p>
+            <ul>
+              <li><b>screenWidth</b>: the width of the screen</li>
+              <li><b>screenHeight</b>: the height of the screen</li>
+              <li><b>xOffset</b>: the unavailable space in the x-axis of screen, such as MacOS Dock put on the left/right side of the screen</li>
+              <li><b>yOffset</b>: the unavailable space in the y-axis of screen, such as MacOS menubar and Windows taskbar</li>
+            </ul>
+          </div>
+          <div css={css`
+            text-align: center;
+            margin-top: 20px;
+          `}>
+            <button value="cancel" css={css`
+              font-size: 20px;
+              padding: 10px;
+              width: 100px;
+            `}>OK</button>
+          </div>
+        </form>
+      </dialog>
     </div>
   )
 }
