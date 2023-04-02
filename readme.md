@@ -2,6 +2,8 @@
 
 A Chrome extension for opening windows with customized size and position in one click.
 
+[Chrome Web Store](https://chrome.google.com/webstore/detail/window-opener/iiliegedaegmcdoflhojnpgagjekkhbl)
+
 ![](images/screenshot.png)
 
 
