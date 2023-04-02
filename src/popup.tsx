@@ -26,22 +26,25 @@ const Popup = () => {
 
   return (
     <div>
-      <div css={css`
-        padding: 10px;
-      `}>
-        {windows.map(item => (
-          <WindowItem key={item.id} data={item} />
-        ))}
-      </div>
+      {windows.length > 0 && (
+        <div css={css`
+          padding: 10px;
+          border-bottom: 1px solid #aaa;
+          margin-bottom: 10px;
+        `}>
+          {windows.map(item => (
+            <WindowItem key={item.id} data={item} />
+          ))}
+        </div>
+      )}
 
       <div css={css`
         display: flex;
         flex-direction: column;
         justify-content: center;
         align-items: center;
-        margin-top: 10px;
         padding: 5px 0;
-        border-top: 1px solid #aaa;
+        min-width: 220px;
 
         button {
           margin: 8px;
