@@ -17,29 +17,29 @@ export interface WindowData {
 
 export const windowFigureKeys = ['left', 'top', 'width', 'height']
 
-export function openWindow(data: WindowData) {
-  const figures = calFigures(data)
-  const createArgs = {
-    url: data.url,
-    type: data.type as chrome.windows.createTypeEnum,
-    focused: data.focused,
-    ...figures
-  }
-
+export async function openWindow(data: WindowData) {
   try {
+    const chromeWindow = await chrome.windows.getCurrent()
+    const figures = calFigures(data, getContext(data.staticContext, chromeWindow))
+    const createArgs = {
+      url: data.url,
+      type: data.type as chrome.windows.createTypeEnum,
+      focused: data.focused,
+      ...figures
+    }
     chrome.windows.create(createArgs)
   } catch (err) {
     // create a centered window that shows error message
     // console.warn('openWindow error', err)
-    const context = getContext(data.staticContext)
+    const {staticContext} = data
     const [width, height] = [600, 160]
 
     chrome.windows.create({
       url: `data:text/html,${createErrorHtml(err, data.url)}`,
       type: 'popup',
       focused: true,
-      left: (context.screenWidth - width) / 2,
-      top: (context.screenHeight - height) / 2,
+      left: (staticContext.screenWidth - width) / 2,
+      top: (staticContext.screenHeight - height) / 2,
       width,
       height,
     })
@@ -125,8 +125,8 @@ export function getStaticContext(): StaticContext {
   }
 }
 
-export function getContext(staticContext: StaticContext): Context {
-  const [windowWidth, windowHeight] = [window.outerWidth, window.outerHeight];
+export function getContext(staticContext: StaticContext, chromeWindow: chrome.windows.Window): Context {
+  const [windowWidth, windowHeight] = [chromeWindow.width?? 0, chromeWindow.height?? 0];
   return {
     windowWidth,
     windowHeight,
@@ -147,20 +147,20 @@ interface Figures {
 
 const exprParser = new Parser
 
-export function calFigure(data: WindowData, key: string): number|undefined {
+export function calFigure(data: WindowData, key: string, context: Context): number|undefined {
   const expr = (data as any)[key]
   if (!expr) return undefined
   try {
-    return exprParser.parse(expr).evaluate(getContext(data.staticContext))
+    return exprParser.parse(expr).evaluate(context)
   } catch (err) {
     return NaN
   }
 }
 
-export function calFigures(data: WindowData): Figures {
+export function calFigures(data: WindowData, context: Context): Figures {
   const figures: {[key: string]: number|undefined} = {}
   for (const key of windowFigureKeys) {
-    const v = calFigure(data, key)
+    const v = calFigure(data, key, context)
     if (v !== undefined)
       figures[key] = v
   }

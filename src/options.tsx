@@ -3,7 +3,7 @@ import { createRoot } from 'react-dom/client';
 
 import { css } from '@emotion/react';
 
-import { IconAction, useSettingsStore } from './store';
+import { IconAction, useSettingsStore, useStore } from './store';
 import { setActionBehavior } from './utils/action';
 import { colors, getLogger } from './utils/log';
 import { WindowsManager } from './WindowsManager';
@@ -13,9 +13,35 @@ const lg = getLogger('options', colors.bgYellowBright)
 
 lg.info('options.ts')
 
+chrome.windows.getCurrent().then(window => {
+  useStore.setState({
+    chromeWindow: window
+  })
+})
+
+let boundsChangedTs = new Date().getTime()
+
+chrome.windows.onBoundsChanged.addListener(window => {
+  const nowTs = new Date().getTime()
+  if (nowTs - boundsChangedTs > 300) {
+    boundsChangedTs = nowTs
+    lg.info('bounds changed 300ms after last time')
+    chrome.windows.getCurrent().then(window => {
+      useStore.setState({
+        chromeWindow: window
+      })
+    })
+  }
+})
 
 const Options = () => {
   const [settings, setSettings, isPersistent, error, isInitialStateResolved] = useSettingsStore();
+  // lg.log('render Options', isPersistent, isInitialStateResolved)
+
+  const chromeWindow = useStore((state) => state.chromeWindow)
+
+  // useEffect(() => {
+  // }, [])
 
   const setSettingsSingle = (key: string, value: any) => {
     setSettings(prevState => {
@@ -36,7 +62,7 @@ const Options = () => {
     handleValueChange(e)
   }
 
-  if (!isInitialStateResolved) {
+  if (!isInitialStateResolved || !chromeWindow) {
     return (
       <div>loading</div>
     )

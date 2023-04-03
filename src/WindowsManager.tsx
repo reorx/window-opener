@@ -1,7 +1,6 @@
-import { useState } from 'react';
-
 import { css } from '@emotion/react';
 
+import { useStore } from './store';
 import { textButton, themeColor } from './styles';
 import {
   contextKeys, WindowData, windowFigureKeys, calFigure, openWindow, getStaticContext,
@@ -109,6 +108,8 @@ interface WindowItemProps {
 }
 
 const WindowItem = ({data, defaultId, onDataChanged, onDelete}: WindowItemProps) => {
+  const chromeWindow = useStore(state => state.chromeWindow)
+
   let dataError = ''
   if (!data.url) {
     dataError = 'URL is required'
@@ -119,7 +120,7 @@ const WindowItem = ({data, defaultId, onDataChanged, onDelete}: WindowItemProps)
     data.staticContext = getStaticContext()
   }
 
-  const [context, setContext] = useState(getContext(data.staticContext))
+  const context = getContext(data.staticContext, chromeWindow!)
   const getContextValue = (key: string) => {
     return context[key]
   }
@@ -214,7 +215,7 @@ const WindowItem = ({data, defaultId, onDataChanged, onDelete}: WindowItemProps)
             `}><span css={css`
               padding-inline-start: 5px;
               padding-inline-end: 5px;
-            `}>=</span>{numToString(calFigure(data, key))}</div>
+            `}>=</span>{numToString(calFigure(data, key, context))}</div>
           </div>
         ))}
       </div>
@@ -252,7 +253,6 @@ const WindowItem = ({data, defaultId, onDataChanged, onDelete}: WindowItemProps)
                 },
               }
               onDataChanged(newData)
-              setContext(getContext(newData.staticContext))
             }}
           >(Reset)</button>
         </div>
