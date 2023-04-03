@@ -3,6 +3,7 @@ import { createRoot } from 'react-dom/client';
 
 import { css } from '@emotion/react';
 
+import { BackupManager } from './BackupManager';
 import { IconAction, useSettingsStore, useStore } from './store';
 import { setActionBehavior } from './utils/action';
 import { colors, getLogger } from './utils/log';
@@ -108,6 +109,10 @@ const Options = () => {
           setSettingsSingle('windows', windows);
         }}
       ></WindowsManager>
+
+      <h2>Backup and restore</h2>
+      <BackupManager />
+
     </div>
   );
 };

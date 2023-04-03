@@ -2,6 +2,7 @@ import { IconAction } from '../store';
 
 
 export function setActionBehavior(action: IconAction) {
+  console.log('setActionBehavior', action)
   if (action === IconAction.defaultWindow) {
     chrome.action.setPopup({
       popup: ''

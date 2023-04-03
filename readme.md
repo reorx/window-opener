@@ -14,6 +14,7 @@ A Chrome extension for opening windows with customized size and position in one 
 - [x] add help message for the context variables
 - [x] add name for windows, display name and domain in windows list in popup
 - [x] create new window data from the current window
-- [ ] support keyboard shortcut
+- [x] support keyboard shortcut
+- [x] export/import settings
+- [ ] move windows up/down
 - [ ] focus on existing window rather than open a new one
-- [ ] export/import settings
