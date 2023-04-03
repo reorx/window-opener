@@ -96,11 +96,18 @@ const WindowItem = ({data}: {data: WindowData}) => {
       }}
     >
       <div css={css`
+        .name {
+          margin-inline-end: 10px;
+        }
         .star {
           color: ${themeColor};
-          margin-inline-start: 10px;
         }
-      `}>{data.name}{data.default && <span className='star'>★</span>}</div>
+      `}>
+        {data.name && (
+          <span className='name'>{data.name}</span>
+        )}
+        {data.default && <span className='star'>★</span>}
+      </div>
       <div css={css`
         font-size: 13px;
         color: #999;
