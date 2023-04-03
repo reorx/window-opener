@@ -1,3 +1,5 @@
+import { css } from '@emotion/react';
+
 import { useSettingsStore } from './store';
 import { setActionBehavior } from './utils/action';
 
@@ -27,7 +29,15 @@ export const BackupManager = () => {
   }
 
   return (
-    <div>
+    <div css={css`
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+
+      .arrow {
+        padding: 0 5px;
+      }
+    `}>
       <div>
         <button
           onClick={exportSettings}
@@ -35,10 +45,11 @@ export const BackupManager = () => {
       </div>
 
       <div>
-        <input type="file" name="import-file" accept=".json" />
         <button
           onClick={importSettings}
         >Import</button>
+        <span className="arrow">←</span>
+        <input type="file" name="import-file" accept=".json" />
       </div>
     </div>
   )
