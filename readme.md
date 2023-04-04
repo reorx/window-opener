@@ -16,5 +16,7 @@ A Chrome extension for opening windows with customized size and position in one 
 - [x] create new window data from the current window (1.1.0)
 - [x] support keyboard shortcut (1.2.0)
 - [x] export/import settings (1.2.0)
+- [ ] accessbility (tabindex) in popup
+- [ ] menus for add current window
 - [ ] move windows up/down
 - [ ] focus on existing window rather than open a new one
