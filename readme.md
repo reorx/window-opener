@@ -4,6 +4,8 @@ A Chrome extension for opening windows with customized size and position in one 
 
 [Chrome Web Store](https://chrome.google.com/webstore/detail/window-opener/iiliegedaegmcdoflhojnpgagjekkhbl)
 
+中文说明（博客）: https://reorx.com/makers-daily/007-window-opener-for-chrome/
+
 ![](images/screenshot.png)
 
 
