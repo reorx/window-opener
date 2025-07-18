@@ -22,7 +22,7 @@ export async function openWindow(data: WindowData) {
     const chromeWindow = await chrome.windows.getCurrent()
     const figures = calFigures(data, getContext(data.staticContext, chromeWindow))
     const createArgs = {
-      url: data.url,
+      url: data.url || undefined,
       type: data.type as chrome.windows.createTypeEnum,
       focused: data.focused,
       ...figures

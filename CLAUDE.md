@@ -9,14 +9,15 @@ Window Opener is a Chrome extension that allows users to open browser windows wi
 ## Development Commands
 
 ### Build & Development
-- `npm start` - Start development mode with webpack watch
-- `npm run build` - Build for production
-- `npm run dist` - Build and package extension for Chrome Web Store (creates zip file)
-- `npm run clean` - Remove build directory
+- use `pnpm` to manage the project
+- `pnpm dev` - Start development mode with webpack watch
+- `pnpm run build` - Build for production
+- `pnpm run dist` - Build and package extension for Chrome Web Store (creates zip file)
+- `pnpm run clean` - Remove build directory
 
 ### Testing & Formatting
-- `npm test` - Run Jest tests
-- `npm run format-style` - Format TypeScript/TSX files with Prettier
+- `pnpm test` - Run Jest tests
+- `pnpm run format-style` - Format TypeScript/TSX files with Prettier
 
 ## Architecture
 

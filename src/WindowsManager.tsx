@@ -111,9 +111,7 @@ const WindowItem = ({data, defaultId, onDataChanged, onDelete}: WindowItemProps)
   const chromeWindow = useStore(state => state.chromeWindow)
 
   let dataError = ''
-  if (!data.url) {
-    dataError = 'URL is required'
-  } else if (!data.url.match(/^\w+:\/\//)) {
+  if (data.url && !data.url.match(/^\w+:\/\//)) {
     dataError = 'Invalid URL format'
   }
   if (!data.staticContext) {
