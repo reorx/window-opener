@@ -27,7 +27,16 @@ export const WindowsManager = ({windows, onWindowsChange}: WindowsManagerProps) 
             defaultId={defaultId}
             onDataChanged={(data) => {
               // console.log('onDataChanged', data)
+              const wasDefault = item.default;
               Object.assign(item, data);
+              // If this window is being set as default, unset others
+              if (data.default && !wasDefault) {
+                windows.forEach(w => {
+                  if (w.id !== data.id) {
+                    w.default = false;
+                  }
+                });
+              }
               onWindowsChange(windows)
             }}
             onDelete={(data) => {
@@ -69,6 +78,10 @@ const inputItem = css`
     margin-inline-end: 5px;
     width: 50px;
     text-align: right;
+    font-weight: bold;
+  }
+  label.normal {
+    font-weight: normal;
   }
   input[type=text] {
     display: block;
@@ -144,18 +157,6 @@ const WindowItem = ({data, defaultId, onDataChanged, onDelete}: WindowItemProps)
           `}></div>
         </div>
       </div>
-      <div css={rowFullWidth}>
-        <div css={inputItem}>
-          <label>URL:</label>
-          <input type="text" name="url"
-            defaultValue={data.url}
-            onChange={e => onDataChanged({
-              ...data,
-              url: e.target.value,
-            })}
-          />
-        </div>
-      </div>
 
       <div css={[rowCols, cols4]}>
         <div css={inputItem}>
@@ -184,15 +185,6 @@ const WindowItem = ({data, defaultId, onDataChanged, onDelete}: WindowItemProps)
           />
         </div>
         <div css={inputItem}>
-          <label htmlFor={data.id + "-input-default"}>Default:</label>
-          <input type="checkbox" name="default" id={data.id + "-input-default"}
-            defaultChecked={data.default}
-            disabled={!!defaultId && defaultId !== data.id}
-            onChange={e => onDataChanged({
-              ...data,
-              default: e.target.checked,
-            })}
-          />
         </div>
       </div>
 
@@ -301,6 +293,20 @@ const WindowItem = ({data, defaultId, onDataChanged, onDelete}: WindowItemProps)
         </div>
       </div>
 
+      <div css={rowFullWidth}>
+        <div css={inputItem}>
+          <label className="normal">URL:</label>
+          <input type="text" name="url"
+            placeholder="Optional - leave empty for blank page"
+            defaultValue={data.url}
+            onChange={e => onDataChanged({
+              ...data,
+              url: e.target.value,
+            })}
+          />
+        </div>
+      </div>
+
       {dataError && (
         <div css={css`
           color: #c00a0d;
@@ -316,6 +322,15 @@ const WindowItem = ({data, defaultId, onDataChanged, onDelete}: WindowItemProps)
         <button onClick={() => {
           openWindow(data)
         }}>Open</button>
+        <button 
+          disabled={data.default}
+          onClick={() => {
+            onDataChanged({
+              ...data,
+              default: true,
+            })
+          }}
+        >Set as default</button>
         <button onClick={() => {
           if (confirm('Are you sure you want to delete this window?')) {
             onDelete(data)

@@ -92,3 +92,23 @@ src/
 - **Options**: Full settings management
 - **Background**: Persistent service worker for shortcuts and actions
 - **Storage**: Chrome sync storage for cross-device settings
+
+## Styling Guidelines
+
+When working with styles in this project, follow these practices:
+
+- **Use Emotion's CSS-in-JS**: The project uses `@emotion/react` for styling
+- **Avoid redundant styles**: If the same style needs to be applied to multiple elements, use CSS selectors instead of repeating the style
+- **Use nested selectors**: When multiple elements share styles, define them once in a parent CSS block using nested selectors
+- **Example**: Instead of `css={css\`font-weight: bold;\`}` on each label, use:
+  ```tsx
+  const containerStyle = css\`
+    label {
+      font-weight: bold;
+    }
+    label.normal {
+      font-weight: normal;
+    }
+  \`
+  ```
+- **Prefer semantic class names**: Use descriptive class names like `normal`, `primary`, `secondary` rather than style-specific names
