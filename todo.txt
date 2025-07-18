@@ -1,3 +1,0 @@
-- [ ] open blank side window
-- [ ] right click menu: search in new side window
-

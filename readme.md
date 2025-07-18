@@ -18,6 +18,8 @@ A Chrome extension for opening windows with customized size and position in one 
 - [x] create new window data from the current window (1.1.0)
 - [x] support keyboard shortcut (1.2.0)
 - [x] export/import settings (1.2.0)
+- [ ] open blank side window
+- [ ] right click menu: search in new side window
 - [ ] accessbility (tabindex) in popup
 - [ ] menus for add current window
 - [ ] move windows up/down
