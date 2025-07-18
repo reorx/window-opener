@@ -12,7 +12,6 @@
     "useDefineForClassFields": true,
     "jsx": "react-jsx",
     "jsxImportSource": "@emotion/react",
-    "types": ["chrome"],
 
     // Required for tsconfig-paths-webpack-plugin
     // "baseUrl": ".",
