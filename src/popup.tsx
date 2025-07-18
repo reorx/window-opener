@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { createRoot } from 'react-dom/client';
 
 import { css } from '@emotion/react';
@@ -17,6 +17,65 @@ lg.info('popup.ts')
 const Popup = () => {
   const [settings, setSettings, isPersistent, error, isInitialStateResolved] = useSettingsStore();
   const windows = settings.windows as WindowData[]
+  const [selectedIndex, setSelectedIndex] = useState(0)
+  const containerRef = useRef<HTMLDivElement>(null)
+
+  // Set initial selection to default window or first window
+  useEffect(() => {
+    if (windows.length > 0) {
+      const defaultIndex = windows.findIndex(w => w.default)
+      setSelectedIndex(defaultIndex >= 0 ? defaultIndex : 0)
+    }
+  }, [windows])
+
+  // Handle keyboard navigation
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (windows.length === 0) return
+
+      switch (e.key) {
+        case 'ArrowUp':
+          e.preventDefault()
+          setSelectedIndex(prev => prev <= 0 ? windows.length - 1 : prev - 1)
+          break
+        case 'ArrowDown':
+          e.preventDefault()
+          setSelectedIndex(prev => prev >= windows.length - 1 ? 0 : prev + 1)
+          break
+        case 'Enter':
+          e.preventDefault()
+          if (windows[selectedIndex]) {
+            openWindow(windows[selectedIndex])
+            window.close()
+          }
+          break
+      }
+
+      // Handle Ctrl+N and Ctrl+P
+      if (e.ctrlKey) {
+        switch (e.key) {
+          case 'n':
+            e.preventDefault()
+            setSelectedIndex(prev => prev >= windows.length - 1 ? 0 : prev + 1)
+            break
+          case 'p':
+            e.preventDefault()
+            setSelectedIndex(prev => prev <= 0 ? windows.length - 1 : prev - 1)
+            break
+        }
+      }
+    }
+
+    document.addEventListener('keydown', handleKeyDown)
+    return () => document.removeEventListener('keydown', handleKeyDown)
+  }, [windows, selectedIndex])
+
+  // Focus container on mount for keyboard events
+  useEffect(() => {
+    if (containerRef.current) {
+      containerRef.current.focus()
+    }
+  }, [])
 
   if (!isInitialStateResolved) {
     return (
@@ -25,15 +84,29 @@ const Popup = () => {
   }
 
   return (
-    <div>
+    <div 
+      ref={containerRef}
+      tabIndex={0}
+      css={css`
+        outline: none;
+      `}
+    >
       {windows.length > 0 && (
         <div css={css`
           padding: 10px;
           border-bottom: 1px solid #aaa;
           margin-bottom: 10px;
         `}>
-          {windows.map(item => (
-            <WindowItem key={item.id} data={item} />
+          {windows.map((item, index) => (
+            <WindowItem 
+              key={item.id} 
+              data={item} 
+              isSelected={index === selectedIndex}
+              onClick={() => {
+                openWindow(item)
+                window.close()
+              }}
+            />
           ))}
         </div>
       )}
@@ -74,8 +147,15 @@ const Popup = () => {
   )
 };
 
-const WindowItem = ({data}: {data: WindowData}) => {
-  const domain = new URL(data.url).hostname
+const WindowItem = ({data, isSelected, onClick}: {data: WindowData, isSelected: boolean, onClick: () => void}) => {
+  let domain = 'New Tab'
+  try {
+    if (data.url) {
+      domain = new URL(data.url).hostname
+    }
+  } catch (error) {
+    domain = 'Invalid URL'
+  }
   return (
     <div
       css={css`
@@ -85,15 +165,17 @@ const WindowItem = ({data}: {data: WindowData}) => {
         font-size: 15px;
         border: 1px solid transparent;
         cursor: pointer;
+        ${isSelected && `
+          border-color: ${themeColor};
+          background-color: #eee;
+          outline: 2px solid ${themeColor};
+        `}
         &:hover {
           border-color: ${themeColor};
           background-color: #eee;
         }
       `}
-      onClick={() => {
-        openWindow(data)
-        window.close()
-      }}
+      onClick={onClick}
     >
       <div css={css`
         .name {
