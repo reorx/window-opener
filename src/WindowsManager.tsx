@@ -25,6 +25,8 @@ export const WindowsManager = ({windows, onWindowsChange}: WindowsManagerProps) 
             key={item.id}
             data={item}
             defaultId={defaultId}
+            windows={windows}
+            onWindowsChange={onWindowsChange}
             onDataChanged={(data) => {
               // console.log('onDataChanged', data)
               const wasDefault = item.default;
@@ -116,11 +118,13 @@ const cols4 = css`
 interface WindowItemProps {
   data: WindowData;
   defaultId?: string;
+  windows: WindowData[];
   onDataChanged: (data: WindowData) => void;
   onDelete: (data: WindowData) => void;
+  onWindowsChange: (windows: WindowData[]) => void;
 }
 
-const WindowItem = ({data, defaultId, onDataChanged, onDelete}: WindowItemProps) => {
+const WindowItem = ({data, defaultId, windows, onDataChanged, onDelete, onWindowsChange}: WindowItemProps) => {
   const chromeWindow = useStore(state => state.chromeWindow)
 
   let dataError = ''
@@ -138,9 +142,10 @@ const WindowItem = ({data, defaultId, onDataChanged, onDelete}: WindowItemProps)
 
   return (
     <div css={css`
-      border: 1px solid ${data.default ? themeColor : '#aaa'};
       padding: 15px;
       margin-bottom: 15px;
+      border: 1px solid #aaa;
+      ${data.default && 'outline: 2px solid ' + themeColor + ';'}
     `}>
       <div css={[rowCols, cols2]}>
         <div css={inputItem}>
@@ -331,6 +336,16 @@ const WindowItem = ({data, defaultId, onDataChanged, onDelete}: WindowItemProps)
             })
           }}
         >Set as default</button>
+        <button onClick={() => {
+          const duplicatedWindow = {
+            ...data,
+            id: new Date().getTime().toString(),
+            name: data.name ? `${data.name} Copied` : 'Copied',
+            default: false,
+          }
+          const updatedWindows = [...windows, duplicatedWindow]
+          onWindowsChange(updatedWindows)
+        }}>Duplicate</button>
         <button onClick={() => {
           if (confirm('Are you sure you want to delete this window?')) {
             onDelete(data)
