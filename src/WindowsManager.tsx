@@ -2,23 +2,11 @@ import { css } from '@emotion/react';
 import { useMemo } from 'react';
 
 import { useStore } from './store';
-import { textButton, themeColor } from './styles';
+import { themeColor } from './styles';
 import {
-  contextKeys, WindowData, windowFigureKeys, calFigure, calFigures, openWindow,
-  Context, getContext, CircularDependencyError,
+  contextKeys, WindowData, windowFigureKeys, calFigures, openWindow,
+  Context, getContext, CircularDependencyError, variableMeaningMap
 } from './window';
-
-export const variableMeaningMap = {
-  // Dynamic variables
-  windowWidth: 'the width of the current window, useful if you want to open the window in a relative position',
-  windowHeight: 'the height of the current window',
-
-  // Static variables
-  screenWidth: 'the width of the screen',
-  screenHeight: 'the height of the screen',
-  xOffset: 'the unavailable space in the x-axis of screen, such as MacOS Dock put on the left/right side of the screen',
-  yOffset: 'the unavailable space in the y-axis of screen, such as MacOS menubar and Windows taskbar'
-};
 
 
 interface WindowsManagerProps {
@@ -29,7 +17,7 @@ interface WindowsManagerProps {
 export const WindowsManager = ({windows, onWindowsChange}: WindowsManagerProps) => {
   const defaultId = windows.find(item => item.default)?.id
   const chromeWindow = useStore(state => state.chromeWindow)
-  const context = useMemo(() => getContext(chromeWindow!), [chromeWindow])
+  const context = useMemo(() => getContext(), [chromeWindow])
 
   return (
     <div css={css`
@@ -125,10 +113,6 @@ const rowCols = css`
 `
 const cols2 = css`
   grid-template-columns: repeat(2, 1fr);
-`
-
-const cols4 = css`
-  grid-template-columns: repeat(4, 1fr);
 `
 
 interface WindowItemProps {

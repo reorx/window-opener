@@ -23,11 +23,10 @@ chrome.action.onClicked.addListener(async () => {
       // chrome.action.openPopup()
       break
     case IconAction.defaultWindow:
-      const defaultWindow = settings.windows.find(w => w.default)
+      let defaultWindow = settings.windows.find(w => w.default) || settings.windows[0]
       if (defaultWindow) {
         openWindow(defaultWindow)
       } else {
-        // open options
         openOptionsPage()
       }
       break

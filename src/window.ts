@@ -16,13 +16,30 @@ export interface WindowData {
 
 export const windowFigureKeys = ['left', 'top', 'width', 'height']
 
+export const variableMeaningMap = {
+  // Dynamic variables
+  windowWidth: 'the width of the current window, useful if you want to open the window in a relative position',
+  windowHeight: 'the height of the current window',
+
+  // Static variables
+  screenWidth: 'the width of the screen',
+  screenHeight: 'the height of the screen',
+  xOffset: 'the unavailable space in the x-axis of screen, such as MacOS Dock put on the left/right side of the screen',
+  yOffset: 'the unavailable space in the y-axis of screen, such as MacOS menubar and Windows taskbar'
+};
+
+
 export async function openWindow(data: WindowData) {
   let chromeWindow: chrome.windows.Window | null = null;
   let figures: any = null;
   let createArgs: any = null;
 
   chromeWindow = await chrome.windows.getCurrent()
-  const context = getContext(chromeWindow)
+  console.log('get current chromeWindow', chromeWindow)
+  if (!chromeWindow) {
+    throw new Error('failed to get current window in openWindow')
+  }
+  const context = await getContext()
 
   try {
     figures = calFigures(data, context)
@@ -126,17 +143,6 @@ export function createWindow() {
     height: '',
   }
   return win
-}
-
-function createErrorHtml(err: any, url: string) {
-  return `
-<html>
-  <head><title>Window Opener Error</title></head>
-  <body>
-    <h3>Error while opening window for ${url}</h3>
-    <code><pre style="white-space: pre-wrap">${err}</pre></code>
-  </body>
-</html>`
 }
 
 function createEnhancedErrorHtml(errorContext: any) {
@@ -348,10 +354,16 @@ export interface Context {
 
 export const contextKeys = ['screenWidth', 'screenHeight', 'xOffset', 'yOffset', 'windowWidth', 'windowHeight']
 
-export function getContext(chromeWindow: chrome.windows.Window): Context {
-  const [screenWidth, screenHeight] = [window.screen.width, window.screen.height];
-  const [xOffset, yOffset] = [screenWidth - window.screen.availWidth, screenHeight - window.screen.availHeight];
-  const [windowWidth, windowHeight] = [chromeWindow.width?? 0, chromeWindow.height?? 0];
+export async function getContext(): Promise<Context> {
+  const window = await chrome.windows.getCurrent();
+  const display = await getWindowDisplay(window);
+  if (!display) {
+    throw Error('could not get display by getWindowDisplay')
+  }
+
+  const [screenWidth, screenHeight] = [display.bounds.width, display.bounds.height];
+  const [xOffset, yOffset] = [screenWidth - display.workArea.width, screenHeight - display.workArea.height];
+  const [windowWidth, windowHeight] = [window.width?? 0, window.height?? 0];
   return {
     screenWidth,
     screenHeight,
@@ -360,6 +372,25 @@ export function getContext(chromeWindow: chrome.windows.Window): Context {
     windowWidth,
     windowHeight,
   }
+}
+
+async function getWindowDisplay(window: chrome.windows.Window) {
+  const displays = await chrome.system.display.getInfo();
+
+  // Calculate window center point
+  const windowCenterX = (window.left || 0) + ((window.width || 0) / 2);
+  const windowCenterY = (window.top || 0) + ((window.height || 0) / 2);
+
+  // Find display containing the window's center
+  const currentDisplay = displays.find(display => {
+    const bounds = display.bounds;
+    return windowCenterX >= bounds.left &&
+      windowCenterX < (bounds.left + bounds.width) &&
+      windowCenterY >= bounds.top &&
+      windowCenterY < (bounds.top + bounds.height);
+  });
+
+  return currentDisplay || displays.find(d => d.isPrimary); // Fallback to primary
 }
 
 
