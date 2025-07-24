@@ -3,7 +3,7 @@ import { css } from '@emotion/react';
 import { useStore } from './store';
 import { textButton, themeColor } from './styles';
 import {
-  contextKeys, WindowData, windowFigureKeys, calFigure, openWindow, getStaticContext,
+  contextKeys, WindowData, windowFigureKeys, calFigure, calFigures, openWindow, getStaticContext,
   staticContextKeys, getContext,
 } from './window';
 
@@ -135,9 +135,20 @@ const WindowItem = ({data, defaultId, windows, onDataChanged, onDelete, onWindow
     data.staticContext = getStaticContext()
   }
 
-  const context = getContext(data.staticContext, chromeWindow!)
+  const baseContext = getContext(data.staticContext, chromeWindow!)
+  // Calculate all figures to include in context display
+  const figures = calFigures(data, baseContext)
+  
+  const context = {
+    ...baseContext,
+    left: figures.left || 0,
+    top: figures.top || 0,
+    width: figures.width || 0,
+    height: figures.height || 0
+  }
+  
   const getContextValue = (key: string) => {
-    return context[key]
+    return (context as any)[key]
   }
 
   return (
@@ -193,11 +204,31 @@ const WindowItem = ({data, defaultId, windows, onDataChanged, onDelete, onWindow
         </div>
       </div>
 
-      <div css={[rowCols, cols2]}>
+      <div css={css`
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        margin-bottom: 8px;
+      `}>
         {windowFigureKeys.map(key => (
-          <div key={key} css={inputItem}>
-            <label>{key}:</label>
+          <div key={key} css={css`
+            display: flex;
+            align-items: center;
+            gap: 8px;
+          `}>
+            <label css={css`
+              min-width: 50px;
+              text-align: right;
+              font-weight: bold;
+            `}>{key}:</label>
+            
             <input type="text" name={key}
+              css={css`
+                flex: 1;
+                padding: 2px;
+                border: 1px solid #aaa;
+                border-radius: 2px;
+              `}
               defaultValue={(data as any)[key]}
               onChange={e => onDataChanged({
                 ...data,
@@ -205,12 +236,35 @@ const WindowItem = ({data, defaultId, windows, onDataChanged, onDelete, onWindow
               })}
             />
 
+            <label css={css`
+              display: flex;
+              align-items: center;
+              gap: 4px;
+              font-size: 12px;
+              min-width: 70px;
+            `}>
+              <input 
+                type="checkbox" 
+                name={`dynamic${key.charAt(0).toUpperCase() + key.slice(1)}`}
+                defaultChecked={(data as any)[`dynamic${key.charAt(0).toUpperCase() + key.slice(1)}`] || false}
+                onChange={e => onDataChanged({
+                  ...data,
+                  [`dynamic${key.charAt(0).toUpperCase() + key.slice(1)}`]: e.target.checked,
+                })}
+              />
+              dynamic
+            </label>
+
             <div css={css`
-              width: 50px;
-            `}><span css={css`
-              padding-inline-start: 5px;
-              padding-inline-end: 5px;
-            `}>=</span>{numToString(calFigure(data, key, context))}</div>
+              min-width: 60px;
+              font-size: 12px;
+              color: #666;
+            `}>
+              <span css={css`
+                padding-inline-start: 5px;
+                padding-inline-end: 5px;
+              `}>=</span>{numToString(calFigure(data, key, context))}
+            </div>
           </div>
         ))}
       </div>
