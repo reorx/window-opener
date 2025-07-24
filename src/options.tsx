@@ -8,7 +8,8 @@ import { IconAction, useSettingsStore, useStore } from './store';
 import { setActionBehavior } from './utils/action';
 import { colors, getLogger } from './utils/log';
 import { WindowsManager, variableMeaningMap } from './WindowsManager';
-import { createWindow, getStaticContext } from './window';
+import { createWindow, } from './window';
+import { themeColor } from './styles';
 
 
 const lg = getLogger('options', colors.bgYellowBright)
@@ -23,7 +24,7 @@ chrome.windows.getCurrent().then(window => {
 
 let boundsChangedTs = new Date().getTime()
 
-chrome.windows.onBoundsChanged.addListener(window => {
+chrome.windows.onBoundsChanged.addListener(() => {
   const nowTs = new Date().getTime()
   if (nowTs - boundsChangedTs > 300) {
     boundsChangedTs = nowTs
@@ -162,16 +163,13 @@ const Options = () => {
           <button 
             css={css`
               background: none;
+              color: ${themeColor};
               border: none;
-              color: #007cba;
               cursor: pointer;
               text-decoration: underline;
               font-size: 14px;
               padding: 0;
               margin-left: 5px;
-              &:hover {
-                color: #005a87;
-              }
             `}
             onClick={() => {
               (document.getElementById('context-explain-modal')! as HTMLDialogElement).showModal()

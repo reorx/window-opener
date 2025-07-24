@@ -1,18 +1,13 @@
 import { calFigures, calFigure, WindowData } from './window';
 
-// Mock static context for consistent testing
-const mockStaticContext = {
+// Mock context for testing
+const mockContext = {
   screenWidth: 1920,
   screenHeight: 1080,
   xOffset: 0,
-  yOffset: 24
-};
-
-// Mock base context for testing
-const mockContext = {
+  yOffset: 24,
   windowWidth: 800,
   windowHeight: 600,
-  ...mockStaticContext
 };
 
 // Helper function to create test window data
@@ -28,7 +23,6 @@ function createTestWindow(): WindowData {
     top: '',
     width: '',
     height: '',
-    staticContext: mockStaticContext,
   };
 }
 
@@ -37,7 +31,7 @@ describe('Figure Calculation Logic', () => {
     it('should calculate simple numeric expressions', () => {
       const data = createTestWindow();
       data.left = '100';
-      
+
       const result = calFigure(data, 'left', mockContext);
       expect(result).toBe(100);
     });
@@ -45,7 +39,7 @@ describe('Figure Calculation Logic', () => {
     it('should calculate expressions with context variables', () => {
       const data = createTestWindow();
       data.left = 'windowWidth + 50';
-      
+
       const result = calFigure(data, 'left', mockContext);
       expect(result).toBe(850); // 800 + 50
     });
@@ -53,7 +47,7 @@ describe('Figure Calculation Logic', () => {
     it('should handle complex mathematical expressions', () => {
       const data = createTestWindow();
       data.left = '(screenWidth - 700) / 2';
-      
+
       const result = calFigure(data, 'left', mockContext);
       expect(result).toBe(610); // (1920 - 700) / 2 = 610
     });
@@ -61,7 +55,7 @@ describe('Figure Calculation Logic', () => {
     it('should return undefined for empty expressions', () => {
       const data = createTestWindow();
       data.left = '';
-      
+
       const result = calFigure(data, 'left', mockContext);
       expect(result).toBeUndefined();
     });
@@ -69,7 +63,7 @@ describe('Figure Calculation Logic', () => {
     it('should return NaN for invalid expressions', () => {
       const data = createTestWindow();
       data.left = 'invalid + expression';
-      
+
       const result = calFigure(data, 'left', mockContext);
       expect(result).toBeNaN();
     });
@@ -82,10 +76,9 @@ describe('Figure Calculation Logic', () => {
       data.top = '200';
       data.width = '800';
       data.height = '600';
-      data.staticContext = mockStaticContext;
-      
+
       const result = calFigures(data, mockContext);
-      
+
       expect(result).toEqual({
         left: 100,
         top: 200,
@@ -100,10 +93,9 @@ describe('Figure Calculation Logic', () => {
       data.top = 'yOffset';
       data.width = 'screenWidth - windowWidth - xOffset';
       data.height = 'screenHeight - yOffset';
-      data.staticContext = mockStaticContext;
-      
+
       const result = calFigures(data, mockContext);
-      
+
       expect(result).toEqual({
         left: 800, // 800 + 0
         top: 24,   // 24
@@ -120,10 +112,9 @@ describe('Figure Calculation Logic', () => {
       data.top = '100';
       data.width = '600';
       data.height = '400';
-      data.staticContext = mockStaticContext;
-      
+
       const result = calFigures(data, mockContext);
-      
+
       expect(result).toEqual({
         left: 660, // (1920 - 600) / 2 = 660
         top: 100,
@@ -138,10 +129,9 @@ describe('Figure Calculation Logic', () => {
       data.top = '100';
       data.width = '600';
       data.height = '400';
-      data.staticContext = mockStaticContext;
-      
+
       const result = calFigures(data, mockContext);
-      
+
       expect(result).toEqual({
         left: 450, // 400 + 50
         top: 100,
@@ -158,10 +148,9 @@ describe('Figure Calculation Logic', () => {
       data.top = '(screenHeight - height) / 2';
       data.width = '600';
       data.height = '400';
-      data.staticContext = mockStaticContext;
-      
+
       const result = calFigures(data, mockContext);
-      
+
       expect(result).toEqual({
         left: 100,
         top: 340, // (1080 - 400) / 2 = 340
@@ -178,10 +167,9 @@ describe('Figure Calculation Logic', () => {
       data.top = '100';
       data.width = 'screenWidth - left - 100';
       data.height = '400';
-      data.staticContext = mockStaticContext;
-      
+
       const result = calFigures(data, mockContext);
-      
+
       expect(result).toEqual({
         left: 200,
         top: 100,
@@ -196,10 +184,9 @@ describe('Figure Calculation Logic', () => {
       data.top = '100';
       data.width = 'screenWidth - top * 2';
       data.height = '400';
-      data.staticContext = mockStaticContext;
-      
+
       const result = calFigures(data, mockContext);
-      
+
       expect(result).toEqual({
         left: 200,
         top: 100,
@@ -216,10 +203,9 @@ describe('Figure Calculation Logic', () => {
       data.top = '100';
       data.width = '600';
       data.height = 'screenHeight - top - 50';
-      data.staticContext = mockStaticContext;
-      
+
       const result = calFigures(data, mockContext);
-      
+
       expect(result).toEqual({
         left: 200,
         top: 100,
@@ -236,10 +222,9 @@ describe('Figure Calculation Logic', () => {
       data.top = '(screenHeight - height) / 2';
       data.width = '600';
       data.height = '400';
-      data.staticContext = mockStaticContext;
-      
+
       const result = calFigures(data, mockContext);
-      
+
       expect(result).toEqual({
         left: 660, // (1920 - 600) / 2 = 660
         top: 340,  // (1080 - 400) / 2 = 340
@@ -254,10 +239,9 @@ describe('Figure Calculation Logic', () => {
       data.top = '50';
       data.width = 'screenWidth - left - 200';
       data.height = 'screenHeight - top - 100';
-      data.staticContext = mockStaticContext;
-      
+
       const result = calFigures(data, mockContext);
-      
+
       expect(result).toEqual({
         left: 100,
         top: 50,
@@ -272,10 +256,9 @@ describe('Figure Calculation Logic', () => {
       data.top = 'height / 3';
       data.width = '800';
       data.height = '600';
-      data.staticContext = mockStaticContext;
-      
+
       const result = calFigures(data, mockContext);
-      
+
       expect(result).toEqual({
         left: 200, // 800 / 4 = 200
         top: 200,  // 600 / 3 = 200
@@ -292,10 +275,9 @@ describe('Figure Calculation Logic', () => {
       data.top = '100';
       data.width = '600';
       data.height = '400';
-      data.staticContext = mockStaticContext;
-      
+
       const result = calFigures(data, mockContext);
-      
+
       expect(result).toEqual({
         top: 100,
         width: 600,
@@ -311,10 +293,9 @@ describe('Figure Calculation Logic', () => {
       data.top = '100';
       data.width = '600';
       data.height = '400';
-      data.staticContext = mockStaticContext;
-      
+
       const result = calFigures(data, mockContext);
-      
+
       expect(result.left).toBeNaN();
       expect(result.top).toBe(100);
       expect(result.width).toBe(600);
@@ -327,8 +308,7 @@ describe('Figure Calculation Logic', () => {
       data.top = '100';
       data.width = 'left + 200';
       data.height = '400';
-      data.staticContext = mockStaticContext;
-      
+
       expect(() => {
         calFigures(data, mockContext);
       }).toThrow(/Circular dependency detected/);
@@ -342,10 +322,9 @@ describe('Figure Calculation Logic', () => {
       data.top = '(screenHeight - height) / 2';
       data.width = '600';
       data.height = '500';
-      data.staticContext = mockStaticContext;
-      
+
       const result = calFigures(data, mockContext);
-      
+
       expect(result).toEqual({
         left: 660, // (1920 - 600) / 2
         top: 290,  // (1080 - 500) / 2
@@ -360,10 +339,9 @@ describe('Figure Calculation Logic', () => {
       data.top = 'yOffset';
       data.width = 'screenWidth - windowWidth - xOffset';
       data.height = 'screenHeight - yOffset';
-      data.staticContext = mockStaticContext;
-      
+
       const result = calFigures(data, mockContext);
-      
+
       expect(result).toEqual({
         left: 800,   // 800 + 0
         top: 24,     // 24

@@ -12,7 +12,6 @@ export interface WindowData {
   top: string;
   width: string;
   height: string;
-  staticContext: StaticContext;
 }
 
 export const windowFigureKeys = ['left', 'top', 'width', 'height']
@@ -21,19 +20,20 @@ export async function openWindow(data: WindowData) {
   let chromeWindow: chrome.windows.Window | null = null;
   let figures: any = null;
   let createArgs: any = null;
-  
+
+  chromeWindow = await chrome.windows.getCurrent()
+  const context = getContext(chromeWindow)
+
   try {
-    chromeWindow = await chrome.windows.getCurrent()
-    const context = getContext(data.staticContext, chromeWindow)
     figures = calFigures(data, context)
-    
+
     createArgs = {
       url: data.url || undefined,
       type: data.type as chrome.windows.createTypeEnum,
       focused: data.focused,
       ...figures
     }
-    
+
     await chrome.windows.create(createArgs)
   } catch (err) {
     // Create detailed error context for debugging
@@ -52,7 +52,7 @@ export async function openWindow(data: WindowData) {
           height: data.height
         },
       },
-      staticContext: data.staticContext,
+      context,
       currentWindow: chromeWindow ? {
         left: chromeWindow.left,
         top: chromeWindow.top,
@@ -72,16 +72,15 @@ export async function openWindow(data: WindowData) {
     console.error('Window creation failed:', errorContext);
 
     // Create error display window
-    const {staticContext} = data
-    const [width, height] = [800, 600]
+    const [width, height] = [Math.floor(context.screenWidth / 2), Math.floor(context.screenHeight * 0.7)]
 
     try {
       await chrome.windows.create({
         url: `data:text/html,${encodeURIComponent(createEnhancedErrorHtml(errorContext))}`,
         type: 'popup',
         focused: true,
-        left: Math.max(0, (staticContext.screenWidth - width) / 2),
-        top: Math.max(0, (staticContext.screenHeight - height) / 2),
+        left: Math.floor((context.screenWidth - width) / 2),
+        top: Math.floor((context.screenHeight - height) / 2),
         width,
         height,
       })
@@ -125,7 +124,6 @@ export function createWindow() {
     top: '',
     width: '',
     height: '',
-    staticContext: getStaticContext(),
   }
   return win
 }
@@ -143,7 +141,7 @@ function createErrorHtml(err: any, url: string) {
 
 function createEnhancedErrorHtml(errorContext: any) {
   const formatJson = (obj: any) => JSON.stringify(obj, null, 2);
-  
+
   return `
 <!DOCTYPE html>
 <html>
@@ -241,7 +239,7 @@ function createEnhancedErrorHtml(errorContext: any) {
 <body>
   <div class="container">
     <h1>⚠️ Window Opener Error Report</h1>
-    
+
     <div class="error-summary">
       <strong>${errorContext.error.name}:</strong> ${errorContext.error.message}
     </div>
@@ -281,14 +279,14 @@ function createEnhancedErrorHtml(errorContext: any) {
 
     <div class="section">
       <h2>🖥️ Context Information</h2>
-      
+
       <h3>Static Context (Screen Info)</h3>
       <table>
         <tr><th>Property</th><th>Value</th></tr>
-        <tr><td>Screen Width</td><td class="value">${errorContext.staticContext.screenWidth}px</td></tr>
-        <tr><td>Screen Height</td><td class="value">${errorContext.staticContext.screenHeight}px</td></tr>
-        <tr><td>X Offset</td><td class="value">${errorContext.staticContext.xOffset}px</td></tr>
-        <tr><td>Y Offset</td><td class="value">${errorContext.staticContext.yOffset}px</td></tr>
+        <tr><td>Screen Width</td><td class="value">${errorContext.context.screenWidth}px</td></tr>
+        <tr><td>Screen Height</td><td class="value">${errorContext.context.screenHeight}px</td></tr>
+        <tr><td>X Offset</td><td class="value">${errorContext.context.xOffset}px</td></tr>
+        <tr><td>Y Offset</td><td class="value">${errorContext.context.yOffset}px</td></tr>
       </table>
 
       <h3>Current Window</h3>
@@ -297,10 +295,10 @@ function createEnhancedErrorHtml(errorContext: any) {
 
     <div class="section">
       <h2>🔢 Calculated Results</h2>
-      
+
       <h3>Figure Calculation Results</h3>
       <div class="code-block">${formatJson(errorContext.calculatedFigures)}</div>
-      
+
       <h3>Chrome API Arguments</h3>
       <p>The following arguments were passed to <span class="highlight">chrome.windows.create()</span>:</p>
       <div class="code-block">${formatJson(errorContext.createArgs)}</div>
@@ -308,10 +306,10 @@ function createEnhancedErrorHtml(errorContext: any) {
 
     <div class="section">
       <h2>🐛 Error Details</h2>
-      
+
       <h3>Error Message</h3>
       <div class="code-block">${errorContext.error.message}</div>
-      
+
       <h3>Stack Trace</h3>
       <div class="code-block">${errorContext.error.stack}</div>
     </div>
@@ -338,40 +336,29 @@ function createEnhancedErrorHtml(errorContext: any) {
 
 /* context */
 
-export interface StaticContext {
+export interface Context {
   screenWidth: number;
   screenHeight: number;
   xOffset: number;
   yOffset: number;
-}
-
-export interface Context extends StaticContext{
   windowWidth: number;
   windowHeight: number;
   [key: string]: number;
 }
 
+export const contextKeys = ['screenWidth', 'screenHeight', 'xOffset', 'yOffset', 'windowWidth', 'windowHeight']
 
-export const staticContextKeys = ['screenWidth', 'screenHeight', 'xOffset', 'yOffset']
-export const contextKeys = ['windowWidth', 'windowHeight', ...staticContextKeys]
-
-export function getStaticContext(): StaticContext {
+export function getContext(chromeWindow: chrome.windows.Window): Context {
   const [screenWidth, screenHeight] = [window.screen.width, window.screen.height];
   const [xOffset, yOffset] = [screenWidth - window.screen.availWidth, screenHeight - window.screen.availHeight];
+  const [windowWidth, windowHeight] = [chromeWindow.width?? 0, chromeWindow.height?? 0];
   return {
     screenWidth,
     screenHeight,
     xOffset,
     yOffset,
-  }
-}
-
-export function getContext(staticContext: StaticContext, chromeWindow: chrome.windows.Window): Context {
-  const [windowWidth, windowHeight] = [chromeWindow.width?? 0, chromeWindow.height?? 0];
-  return {
     windowWidth,
     windowHeight,
-    ...staticContext
   }
 }
 
@@ -410,14 +397,14 @@ export class CircularDependencyError extends Error {
 function analyzeDependencies(data: WindowData): Map<string, string[]> {
   const dependencies = new Map<string, string[]>();
   const availableVars = new Set(['screenWidth', 'screenHeight', 'windowWidth', 'windowHeight', 'xOffset', 'yOffset']);
-  
+
   for (const key of windowFigureKeys) {
     const expr = (data as any)[key];
     if (!expr) {
       dependencies.set(key, []);
       continue;
     }
-    
+
     const deps: string[] = [];
     // Simple regex-based dependency detection for figure variables
     for (const figureKey of windowFigureKeys) {
@@ -431,7 +418,7 @@ function analyzeDependencies(data: WindowData): Map<string, string[]> {
     }
     dependencies.set(key, deps);
   }
-  
+
   return dependencies;
 }
 
@@ -440,7 +427,7 @@ function topologicalSort(dependencies: Map<string, string[]>): string[] {
   const visited = new Set<string>();
   const temp = new Set<string>();
   const result: string[] = [];
-  
+
   function visit(key: string, path: string[] = []): void {
     if (temp.has(key)) {
       // Circular dependency detected
@@ -448,29 +435,29 @@ function topologicalSort(dependencies: Map<string, string[]>): string[] {
       const cycle = path.slice(cycleStart);
       throw new CircularDependencyError(cycle);
     }
-    
+
     if (visited.has(key)) {
       return;
     }
-    
+
     temp.add(key);
     const deps = dependencies.get(key) || [];
-    
+
     for (const dep of deps) {
       visit(dep, [...path, key]);
     }
-    
+
     temp.delete(key);
     visited.add(key);
     result.push(key);
   }
-  
+
   for (const key of windowFigureKeys) {
     if (!visited.has(key)) {
       visit(key);
     }
   }
-  
+
   return result;
 }
 
@@ -478,10 +465,10 @@ export function calFigures(data: WindowData, context: Context): Figures {
   // Analyze dependencies and determine calculation order
   const dependencies = analyzeDependencies(data);
   const calculationOrder = topologicalSort(dependencies);
-  
+
   const figures: {[key: string]: number|undefined} = {};
   const enhancedContext = { ...context };
-  
+
   // Calculate figures in dependency order
   for (const key of calculationOrder) {
     const v = calFigure(data, key, enhancedContext);
@@ -491,7 +478,7 @@ export function calFigures(data: WindowData, context: Context): Figures {
       (enhancedContext as any)[key] = v;
     }
   }
-  
+
   return figures as Figures;
 }
 

@@ -1,17 +1,18 @@
 import { css } from '@emotion/react';
+import { useMemo } from 'react';
 
 import { useStore } from './store';
 import { textButton, themeColor } from './styles';
 import {
-  contextKeys, WindowData, windowFigureKeys, calFigure, calFigures, openWindow, getStaticContext,
-  staticContextKeys, getContext, CircularDependencyError,
+  contextKeys, WindowData, windowFigureKeys, calFigure, calFigures, openWindow,
+  Context, getContext, CircularDependencyError,
 } from './window';
 
 export const variableMeaningMap = {
   // Dynamic variables
   windowWidth: 'the width of the current window, useful if you want to open the window in a relative position',
   windowHeight: 'the height of the current window',
-  
+
   // Static variables
   screenWidth: 'the width of the screen',
   screenHeight: 'the height of the screen',
@@ -27,6 +28,9 @@ interface WindowsManagerProps {
 
 export const WindowsManager = ({windows, onWindowsChange}: WindowsManagerProps) => {
   const defaultId = windows.find(item => item.default)?.id
+  const chromeWindow = useStore(state => state.chromeWindow)
+  const context = useMemo(() => getContext(chromeWindow!), [chromeWindow])
+
   return (
     <div css={css`
       max-width: 800px;
@@ -38,6 +42,7 @@ export const WindowsManager = ({windows, onWindowsChange}: WindowsManagerProps) 
             data={item}
             defaultId={defaultId}
             windows={windows}
+            context={context}
             onWindowsChange={onWindowsChange}
             onDataChanged={(data) => {
               // console.log('onDataChanged', data)
@@ -73,7 +78,6 @@ export const WindowsManager = ({windows, onWindowsChange}: WindowsManagerProps) 
               top: '',
               width: '',
               height: '',
-              staticContext: getStaticContext(),
             }
             windows.push(win)
             onWindowsChange(windows)
@@ -134,20 +138,16 @@ interface WindowItemProps {
   onDataChanged: (data: WindowData) => void;
   onDelete: (data: WindowData) => void;
   onWindowsChange: (windows: WindowData[]) => void;
+  context: Context;
 }
 
-const WindowItem = ({data, defaultId, windows, onDataChanged, onDelete, onWindowsChange}: WindowItemProps) => {
-  const chromeWindow = useStore(state => state.chromeWindow)
+const WindowItem = ({data, defaultId, windows, context, onDataChanged, onDelete, onWindowsChange}: WindowItemProps) => {
 
   let dataError = ''
   if (data.url && !data.url.match(/^\w+:\/\//)) {
     dataError = 'Invalid URL format'
   }
-  if (!data.staticContext) {
-    data.staticContext = getStaticContext()
-  }
 
-  const context = getContext(data.staticContext, chromeWindow!)
   const getContextValue = (key: string) => {
     return (context as any)[key]
   }
@@ -284,21 +284,6 @@ const WindowItem = ({data, defaultId, windows, onDataChanged, onDelete, onWindow
           display: flex;
         `}>
           <div>Context</div>
-          <button
-            css={[textButton, css`
-              margin-left: auto;
-            `]}
-            onClick={() => {
-              const newData = {
-                ...data,
-                staticContext: {
-                  ...data.staticContext,
-                  ...getStaticContext()
-                },
-              }
-              onDataChanged(newData)
-            }}
-          >(Reset)</button>
         </div>
         <div css={css`
           display: flex;
@@ -334,15 +319,8 @@ const WindowItem = ({data, defaultId, windows, onDataChanged, onDelete, onWindow
               // using defaultValue causes the value not being changed when rerender,
               // the `key` here makes sure the whole input is recreated to avoid this problem
               key={`input-${key}-${getContextValue(key)}`}
-              readOnly={!staticContextKeys.includes(key)}
+              readOnly
               defaultValue={getContextValue(key)}
-              onChange={e => onDataChanged({
-                ...data,
-                staticContext: {
-                  ...data.staticContext,
-                  [key]: parseInt(e.target.value),
-                }
-              })}
             />
           </div>))}
         </div>
@@ -364,7 +342,7 @@ const WindowItem = ({data, defaultId, windows, onDataChanged, onDelete, onWindow
         <button onClick={() => {
           openWindow(data)
         }}>Open</button>
-        <button 
+        <button
           disabled={data.default}
           onClick={() => {
             onDataChanged({
