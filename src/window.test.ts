@@ -113,14 +113,13 @@ describe('Figure Calculation Logic', () => {
     });
   });
 
-  describe('Dynamic calculations - left dynamic', () => {
-    it('should calculate dynamic left based on static width', () => {
+  describe('Dependency resolution - left depends on width/height', () => {
+    it('should calculate left after width when left depends on width', () => {
       const data = createTestWindow();
       data.left = '(screenWidth - width) / 2';
       data.top = '100';
       data.width = '600';
       data.height = '400';
-      data.dynamicLeft = true;
       data.staticContext = mockStaticContext;
       
       const result = calFigures(data, mockContext);
@@ -133,13 +132,12 @@ describe('Figure Calculation Logic', () => {
       });
     });
 
-    it('should calculate dynamic left based on static height', () => {
+    it('should calculate left after height when left depends on height', () => {
       const data = createTestWindow();
       data.left = 'height + 50';
       data.top = '100';
       data.width = '600';
       data.height = '400';
-      data.dynamicLeft = true;
       data.staticContext = mockStaticContext;
       
       const result = calFigures(data, mockContext);
@@ -153,14 +151,13 @@ describe('Figure Calculation Logic', () => {
     });
   });
 
-  describe('Dynamic calculations - top dynamic', () => {
-    it('should calculate dynamic top based on static height', () => {
+  describe('Dependency resolution - top depends on height', () => {
+    it('should calculate top after height when top depends on height', () => {
       const data = createTestWindow();
       data.left = '100';
       data.top = '(screenHeight - height) / 2';
       data.width = '600';
       data.height = '400';
-      data.dynamicTop = true;
       data.staticContext = mockStaticContext;
       
       const result = calFigures(data, mockContext);
@@ -174,14 +171,13 @@ describe('Figure Calculation Logic', () => {
     });
   });
 
-  describe('Dynamic calculations - width dynamic', () => {
-    it('should calculate dynamic width based on static left', () => {
+  describe('Dependency resolution - width depends on left/top', () => {
+    it('should calculate width after left when width depends on left', () => {
       const data = createTestWindow();
       data.left = '200';
       data.top = '100';
       data.width = 'screenWidth - left - 100';
       data.height = '400';
-      data.dynamicWidth = true;
       data.staticContext = mockStaticContext;
       
       const result = calFigures(data, mockContext);
@@ -194,13 +190,12 @@ describe('Figure Calculation Logic', () => {
       });
     });
 
-    it('should calculate dynamic width based on static top', () => {
+    it('should calculate width after top when width depends on top', () => {
       const data = createTestWindow();
       data.left = '200';
       data.top = '100';
       data.width = 'screenWidth - top * 2';
       data.height = '400';
-      data.dynamicWidth = true;
       data.staticContext = mockStaticContext;
       
       const result = calFigures(data, mockContext);
@@ -214,14 +209,13 @@ describe('Figure Calculation Logic', () => {
     });
   });
 
-  describe('Dynamic calculations - height dynamic', () => {
-    it('should calculate dynamic height based on static top', () => {
+  describe('Dependency resolution - height depends on top', () => {
+    it('should calculate height after top when height depends on top', () => {
       const data = createTestWindow();
       data.left = '200';
       data.top = '100';
       data.width = '600';
       data.height = 'screenHeight - top - 50';
-      data.dynamicHeight = true;
       data.staticContext = mockStaticContext;
       
       const result = calFigures(data, mockContext);
@@ -235,15 +229,13 @@ describe('Figure Calculation Logic', () => {
     });
   });
 
-  describe('Multiple dynamic calculations', () => {
-    it('should handle left and top both dynamic', () => {
+  describe('Multiple dependency calculations', () => {
+    it('should handle left and top both depending on width and height', () => {
       const data = createTestWindow();
       data.left = '(screenWidth - width) / 2';
       data.top = '(screenHeight - height) / 2';
       data.width = '600';
       data.height = '400';
-      data.dynamicLeft = true;
-      data.dynamicTop = true;
       data.staticContext = mockStaticContext;
       
       const result = calFigures(data, mockContext);
@@ -256,14 +248,12 @@ describe('Figure Calculation Logic', () => {
       });
     });
 
-    it('should handle width and height both dynamic', () => {
+    it('should handle width and height both depending on left and top', () => {
       const data = createTestWindow();
       data.left = '100';
       data.top = '50';
       data.width = 'screenWidth - left - 200';
       data.height = 'screenHeight - top - 100';
-      data.dynamicWidth = true;
-      data.dynamicHeight = true;
       data.staticContext = mockStaticContext;
       
       const result = calFigures(data, mockContext);
@@ -282,8 +272,6 @@ describe('Figure Calculation Logic', () => {
       data.top = 'height / 3';
       data.width = '800';
       data.height = '600';
-      data.dynamicLeft = true;
-      data.dynamicTop = true;
       data.staticContext = mockStaticContext;
       
       const result = calFigures(data, mockContext);
@@ -298,13 +286,12 @@ describe('Figure Calculation Logic', () => {
   });
 
   describe('Edge cases and error handling', () => {
-    it('should handle empty expressions in dynamic calculations', () => {
+    it('should handle empty expressions', () => {
       const data = createTestWindow();
       data.left = '';
       data.top = '100';
       data.width = '600';
       data.height = '400';
-      data.dynamicLeft = true;
       data.staticContext = mockStaticContext;
       
       const result = calFigures(data, mockContext);
@@ -318,13 +305,12 @@ describe('Figure Calculation Logic', () => {
       expect(result.left).toBeUndefined();
     });
 
-    it('should handle invalid expressions in dynamic calculations', () => {
+    it('should handle invalid expressions', () => {
       const data = createTestWindow();
       data.left = 'invalid + expression';
       data.top = '100';
       data.width = '600';
       data.height = '400';
-      data.dynamicLeft = true;
       data.staticContext = mockStaticContext;
       
       const result = calFigures(data, mockContext);
@@ -335,25 +321,17 @@ describe('Figure Calculation Logic', () => {
       expect(result.height).toBe(400);
     });
 
-    it('should prevent circular dependencies by calculating non-dynamic first', () => {
+    it('should detect circular dependencies and throw error', () => {
       const data = createTestWindow();
-      // This would be circular if both were dynamic
       data.left = 'width + 100';
       data.top = '100';
-      data.width = 'left + 200'; // Would reference left, but left isn't available in static phase
+      data.width = 'left + 200';
       data.height = '400';
-      data.dynamicLeft = true; // Only left is dynamic
       data.staticContext = mockStaticContext;
       
-      const result = calFigures(data, mockContext);
-      
-      // Width is calculated first as static: NaN (because left isn't available in context yet)
-      // But NaN gets converted to 0 in the enhanced context
-      // Then left is calculated as dynamic: 0 + 100 = 100
-      expect(result.width).toBeNaN();
-      expect(result.left).toBe(100); // 0 + 100 (since width defaulted to 0)
-      expect(result.top).toBe(100);
-      expect(result.height).toBe(400);
+      expect(() => {
+        calFigures(data, mockContext);
+      }).toThrow(/Circular dependency detected/);
     });
   });
 
@@ -364,8 +342,6 @@ describe('Figure Calculation Logic', () => {
       data.top = '(screenHeight - height) / 2';
       data.width = '600';
       data.height = '500';
-      data.dynamicLeft = true;
-      data.dynamicTop = true;
       data.staticContext = mockStaticContext;
       
       const result = calFigures(data, mockContext);
@@ -384,10 +360,6 @@ describe('Figure Calculation Logic', () => {
       data.top = 'yOffset';
       data.width = 'screenWidth - windowWidth - xOffset';
       data.height = 'screenHeight - yOffset';
-      data.dynamicLeft = true;
-      data.dynamicTop = true;
-      data.dynamicWidth = true;
-      data.dynamicHeight = true;
       data.staticContext = mockStaticContext;
       
       const result = calFigures(data, mockContext);

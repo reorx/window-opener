@@ -4,7 +4,7 @@ import { useStore } from './store';
 import { textButton, themeColor } from './styles';
 import {
   contextKeys, WindowData, windowFigureKeys, calFigure, calFigures, openWindow, getStaticContext,
-  staticContextKeys, getContext,
+  staticContextKeys, getContext, CircularDependencyError,
 } from './window';
 
 
@@ -135,20 +135,20 @@ const WindowItem = ({data, defaultId, windows, onDataChanged, onDelete, onWindow
     data.staticContext = getStaticContext()
   }
 
-  const baseContext = getContext(data.staticContext, chromeWindow!)
-  // Calculate all figures to include in context display
-  const figures = calFigures(data, baseContext)
-  
-  const context = {
-    ...baseContext,
-    left: figures.left || 0,
-    top: figures.top || 0,
-    width: figures.width || 0,
-    height: figures.height || 0
-  }
-  
+  const context = getContext(data.staticContext, chromeWindow!)
   const getContextValue = (key: string) => {
     return (context as any)[key]
+  }
+
+  // Check for circular dependencies and calculate all figures
+  let circularError: CircularDependencyError | null = null;
+  let calculatedFigures: any = {};
+  try {
+    calculatedFigures = calFigures(data, context);
+  } catch (err) {
+    if (err instanceof CircularDependencyError) {
+      circularError = err;
+    }
   }
 
   return (
@@ -204,31 +204,11 @@ const WindowItem = ({data, defaultId, windows, onDataChanged, onDelete, onWindow
         </div>
       </div>
 
-      <div css={css`
-        display: flex;
-        flex-direction: column;
-        gap: 8px;
-        margin-bottom: 8px;
-      `}>
+      <div css={[rowCols, cols2]}>
         {windowFigureKeys.map(key => (
-          <div key={key} css={css`
-            display: flex;
-            align-items: center;
-            gap: 8px;
-          `}>
-            <label css={css`
-              min-width: 50px;
-              text-align: right;
-              font-weight: bold;
-            `}>{key}:</label>
-            
+          <div key={key} css={inputItem}>
+            <label css={css`color: ${themeColor};`}>{key}:</label>
             <input type="text" name={key}
-              css={css`
-                flex: 1;
-                padding: 2px;
-                border: 1px solid #aaa;
-                border-radius: 2px;
-              `}
               defaultValue={(data as any)[key]}
               onChange={e => onDataChanged({
                 ...data,
@@ -236,38 +216,51 @@ const WindowItem = ({data, defaultId, windows, onDataChanged, onDelete, onWindow
               })}
             />
 
-            <label css={css`
-              display: flex;
-              align-items: center;
-              gap: 4px;
-              font-size: 12px;
-              min-width: 70px;
-            `}>
-              <input 
-                type="checkbox" 
-                name={`dynamic${key.charAt(0).toUpperCase() + key.slice(1)}`}
-                defaultChecked={(data as any)[`dynamic${key.charAt(0).toUpperCase() + key.slice(1)}`] || false}
-                onChange={e => onDataChanged({
-                  ...data,
-                  [`dynamic${key.charAt(0).toUpperCase() + key.slice(1)}`]: e.target.checked,
-                })}
-              />
-              dynamic
-            </label>
-
             <div css={css`
-              min-width: 60px;
-              font-size: 12px;
-              color: #666;
-            `}>
-              <span css={css`
-                padding-inline-start: 5px;
-                padding-inline-end: 5px;
-              `}>=</span>{numToString(calFigure(data, key, context))}
-            </div>
+              width: 50px;
+              color: ${themeColor};
+            `}><span css={css`
+              padding-inline-start: 5px;
+              padding-inline-end: 5px;
+            `}>=</span>{numToString((calculatedFigures as any)[key])}</div>
           </div>
         ))}
       </div>
+
+      {circularError && (
+        <div css={css`
+          color: #c00a0d;
+          background-color: #ffebee;
+          border: 1px solid #ffcdd2;
+          padding: 12px;
+          margin-bottom: 8px;
+          border-radius: 4px;
+        `}>
+          <div css={css`
+            font-weight: bold;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+          `}>
+            <span>⚠️</span>
+            <span>Circular Dependency Error</span>
+          </div>
+          <div css={css`
+            font-size: 14px;
+            line-height: 1.4;
+          `}>
+            {circularError.message}
+          </div>
+          <div css={css`
+            font-size: 12px;
+            margin-top: 8px;
+            opacity: 0.8;
+          `}>
+            Fix: Ensure figure expressions don't create circular references between left, top, width, and height.
+          </div>
+        </div>
+      )}
 
       <div css={css`
         color: #666;

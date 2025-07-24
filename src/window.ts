@@ -12,10 +12,6 @@ export interface WindowData {
   top: string;
   width: string;
   height: string;
-  dynamicLeft?: boolean;
-  dynamicTop?: boolean;
-  dynamicWidth?: boolean;
-  dynamicHeight?: boolean;
   staticContext: StaticContext;
 }
 
@@ -55,12 +51,6 @@ export async function openWindow(data: WindowData) {
           width: data.width,
           height: data.height
         },
-        dynamicFlags: {
-          dynamicLeft: data.dynamicLeft,
-          dynamicTop: data.dynamicTop,
-          dynamicWidth: data.dynamicWidth,
-          dynamicHeight: data.dynamicHeight
-        }
       },
       staticContext: data.staticContext,
       currentWindow: chromeWindow ? {
@@ -269,26 +259,22 @@ function createEnhancedErrorHtml(errorContext: any) {
 
       <h3>📐 Position & Size Expressions</h3>
       <table>
-        <tr><th>Property</th><th>Expression</th><th>Dynamic</th></tr>
+        <tr><th>Property</th><th>Expression</th></tr>
         <tr>
           <td>Left</td>
           <td class="value">${errorContext.windowData.expressions.left || '(empty)'}</td>
-          <td class="value">${errorContext.windowData.dynamicFlags.dynamicLeft || false}</td>
         </tr>
         <tr>
           <td>Top</td>
           <td class="value">${errorContext.windowData.expressions.top || '(empty)'}</td>
-          <td class="value">${errorContext.windowData.dynamicFlags.dynamicTop || false}</td>
         </tr>
         <tr>
           <td>Width</td>
           <td class="value">${errorContext.windowData.expressions.width || '(empty)'}</td>
-          <td class="value">${errorContext.windowData.dynamicFlags.dynamicWidth || false}</td>
         </tr>
         <tr>
           <td>Height</td>
           <td class="value">${errorContext.windowData.expressions.height || '(empty)'}</td>
-          <td class="value">${errorContext.windowData.dynamicFlags.dynamicHeight || false}</td>
         </tr>
       </table>
     </div>
@@ -367,7 +353,7 @@ export interface Context extends StaticContext{
 
 
 export const staticContextKeys = ['screenWidth', 'screenHeight', 'xOffset', 'yOffset']
-export const contextKeys = ['windowWidth', 'windowHeight', 'left', 'top', 'width', 'height', ...staticContextKeys]
+export const contextKeys = ['windowWidth', 'windowHeight', ...staticContextKeys]
 
 export function getStaticContext(): StaticContext {
   const [screenWidth, screenHeight] = [window.screen.width, window.screen.height];
@@ -412,41 +398,101 @@ export function calFigure(data: WindowData, key: string, context: Context): numb
   }
 }
 
+// Class to represent a calculation error with circular dependencies
+export class CircularDependencyError extends Error {
+  constructor(public cycle: string[]) {
+    super(`Circular dependency detected: ${cycle.join(' -> ')} -> ${cycle[0]}`);
+    this.name = 'CircularDependencyError';
+  }
+}
+
+// Analyze dependencies between figure expressions
+function analyzeDependencies(data: WindowData): Map<string, string[]> {
+  const dependencies = new Map<string, string[]>();
+  const availableVars = new Set(['screenWidth', 'screenHeight', 'windowWidth', 'windowHeight', 'xOffset', 'yOffset']);
+  
+  for (const key of windowFigureKeys) {
+    const expr = (data as any)[key];
+    if (!expr) {
+      dependencies.set(key, []);
+      continue;
+    }
+    
+    const deps: string[] = [];
+    // Simple regex-based dependency detection for figure variables
+    for (const figureKey of windowFigureKeys) {
+      if (figureKey !== key && expr.includes(figureKey)) {
+        // Check if it's actually a variable reference (not part of another word)
+        const regex = new RegExp(`\\b${figureKey}\\b`);
+        if (regex.test(expr)) {
+          deps.push(figureKey);
+        }
+      }
+    }
+    dependencies.set(key, deps);
+  }
+  
+  return dependencies;
+}
+
+// Topological sort to determine calculation order
+function topologicalSort(dependencies: Map<string, string[]>): string[] {
+  const visited = new Set<string>();
+  const temp = new Set<string>();
+  const result: string[] = [];
+  
+  function visit(key: string, path: string[] = []): void {
+    if (temp.has(key)) {
+      // Circular dependency detected
+      const cycleStart = path.indexOf(key);
+      const cycle = path.slice(cycleStart);
+      throw new CircularDependencyError(cycle);
+    }
+    
+    if (visited.has(key)) {
+      return;
+    }
+    
+    temp.add(key);
+    const deps = dependencies.get(key) || [];
+    
+    for (const dep of deps) {
+      visit(dep, [...path, key]);
+    }
+    
+    temp.delete(key);
+    visited.add(key);
+    result.push(key);
+  }
+  
+  for (const key of windowFigureKeys) {
+    if (!visited.has(key)) {
+      visit(key);
+    }
+  }
+  
+  return result;
+}
+
 export function calFigures(data: WindowData, context: Context): Figures {
-  const figures: {[key: string]: number|undefined} = {}
+  // Analyze dependencies and determine calculation order
+  const dependencies = analyzeDependencies(data);
+  const calculationOrder = topologicalSort(dependencies);
   
-  // Calculate non-dynamic values first
-  for (const key of windowFigureKeys) {
-    const isDynamic = (data as any)[`dynamic${key.charAt(0).toUpperCase() + key.slice(1)}`]
-    if (!isDynamic) {
-      const v = calFigure(data, key, context)
-      if (v !== undefined) {
-        figures[key] = v
-      }
+  const figures: {[key: string]: number|undefined} = {};
+  const enhancedContext = { ...context };
+  
+  // Calculate figures in dependency order
+  for (const key of calculationOrder) {
+    const v = calFigure(data, key, enhancedContext);
+    if (v !== undefined) {
+      figures[key] = v;
+      // Add calculated value to context for subsequent calculations
+      (enhancedContext as any)[key] = v;
     }
   }
   
-  // Create enhanced context with calculated non-dynamic values
-  const enhancedContext = {
-    ...context,
-    left: figures.left || 0,
-    top: figures.top || 0,
-    width: figures.width || 0,
-    height: figures.height || 0
-  }
-  
-  // Then calculate dynamic values with access to other calculated values
-  for (const key of windowFigureKeys) {
-    const isDynamic = (data as any)[`dynamic${key.charAt(0).toUpperCase() + key.slice(1)}`]
-    if (isDynamic) {
-      const v = calFigure(data, key, enhancedContext)
-      if (v !== undefined) {
-        figures[key] = v
-      }
-    }
-  }
-  
-  return figures as Figures
+  return figures as Figures;
 }
 
 function numToString(num: number) {
