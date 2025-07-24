@@ -80,8 +80,8 @@ const Options = () => {
       win.width = 'screenWidth - windowWidth - xOffset'
       win.height = 'screenHeight - yOffset'
     } else {
-      win.width = '600'
-      win.height = '500'
+      win.width = 'screenWidth / 3'
+      win.height = 'screenHeight / 2'
       win.left = '(screenWidth - width) / 2'
       win.top = '(screenHeight - height) / 2'
     }
@@ -158,10 +158,18 @@ const Options = () => {
           color: #666;
           margin-bottom: 20px;
         `}>
-          Use mathematical expressions to set window dimensions and positions. 
-          Available variables: <code>screenWidth</code>, <code>screenHeight</code>, 
-          <code>windowWidth</code>, <code>windowHeight</code>, <code>xOffset</code>, <code>yOffset</code>.
+          Use mathematical expressions to set window dimensions and positions. Available variables:
         </p>
+        <ul css={css`
+          font-size: 14px;
+          color: #666;
+          margin-bottom: 20px;
+          padding-left: 20px;
+        `}>
+          <li><code>screenWidth</code>, <code>screenHeight</code> - current screen's width or height</li>
+          <li><code>windowWidth</code>, <code>windowHeight</code> - current window's width or height</li>
+          <li><code>xOffset</code>, <code>yOffset</code> - current window's x/y offset</li>
+        </ul>
 
         <div css={css`
           margin-bottom: 25px;
@@ -183,21 +191,7 @@ const Options = () => {
             width = screenWidth - windowWidth - xOffset<br/>
             height = screenHeight - yOffset
           </div>
-          <button 
-            css={css`
-              background-color: #007cba;
-              color: white;
-              border: none;
-              padding: 6px 12px;
-              border-radius: 3px;
-              cursor: pointer;
-              font-size: 12px;
-              &:hover {
-                background-color: #005a87;
-              }
-            `}
-            onClick={() => createExampleWindow('fill-right')}
-          >
+          <button onClick={() => createExampleWindow('fill-right')}>
             Copy example
           </button>
         </div>
@@ -216,26 +210,12 @@ const Options = () => {
             margin-bottom: 10px;
             line-height: 1.4;
           `}>
-            width = 600<br/>
-            height = 500<br/>
+            width = screenWidth / 3<br/>
+            height = screenHeight / 2<br/>
             left = (screenWidth - width) / 2<br/>
             top = (screenHeight - height) / 2
           </div>
-          <button 
-            css={css`
-              background-color: #007cba;
-              color: white;
-              border: none;
-              padding: 6px 12px;
-              border-radius: 3px;
-              cursor: pointer;
-              font-size: 12px;
-              &:hover {
-                background-color: #005a87;
-              }
-            `}
-            onClick={() => createExampleWindow('center')}
-          >
+          <button onClick={() => createExampleWindow('center')}>
             Copy example
           </button>
         </div>

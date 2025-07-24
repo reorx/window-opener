@@ -392,7 +392,7 @@ export function calFigure(data: WindowData, key: string, context: Context): numb
   const expr = (data as any)[key]
   if (!expr) return undefined
   try {
-    return exprParser.parse(expr).evaluate(context)
+    return Math.round(exprParser.parse(expr).evaluate(context))
   } catch (err) {
     return NaN
   }

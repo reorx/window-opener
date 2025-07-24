@@ -55,7 +55,7 @@ export const WindowsManager = ({windows, onWindowsChange}: WindowsManagerProps) 
               name: '',
               url: '',
               type: 'normal',
-              focused: false,
+              focused: true,
               default: false,
               left: '',
               top: '',
@@ -172,9 +172,6 @@ const WindowItem = ({data, defaultId, windows, onDataChanged, onDelete, onWindow
             width: 50px;
           `}></div>
         </div>
-      </div>
-
-      <div css={[rowCols, cols4]}>
         <div css={inputItem}>
           <label>Type:</label>
           <select
@@ -188,21 +185,23 @@ const WindowItem = ({data, defaultId, windows, onDataChanged, onDelete, onWindow
             <option value="popup">popup</option>
           </select>
         </div>
+      </div>
+
+      <div css={rowFullWidth}>
         <div css={inputItem}>
-        </div>
-        <div css={inputItem}>
-          <label htmlFor={data.id + "-input-focused"}>Focused:</label>
-          <input type="checkbox" name="focused" id={data.id + "-input-focused"}
-            defaultChecked={data.focused}
+          <label className="normal">URL:</label>
+          <input type="text" name="url"
+            placeholder="Optional - leave empty for blank page"
+            defaultValue={data.url}
             onChange={e => onDataChanged({
               ...data,
-              focused: e.target.checked,
+              url: e.target.value,
             })}
           />
         </div>
-        <div css={inputItem}>
-        </div>
       </div>
+
+      <h4 css={css`margin: 15px 0 10px 0; color: #333;`}>Figures:</h4>
 
       <div css={[rowCols, cols2]}>
         {windowFigureKeys.map(key => (
@@ -345,20 +344,6 @@ const WindowItem = ({data, defaultId, windows, onDataChanged, onDelete, onWindow
         </div>
       </div>
 
-      <div css={rowFullWidth}>
-        <div css={inputItem}>
-          <label className="normal">URL:</label>
-          <input type="text" name="url"
-            placeholder="Optional - leave empty for blank page"
-            defaultValue={data.url}
-            onChange={e => onDataChanged({
-              ...data,
-              url: e.target.value,
-            })}
-          />
-        </div>
-      </div>
-
       {dataError && (
         <div css={css`
           color: #c00a0d;
@@ -370,6 +355,7 @@ const WindowItem = ({data, defaultId, windows, onDataChanged, onDelete, onWindow
       <div css={css`
         display: flex;
         gap: 10px;
+        margin-top: 16px;
       `}>
         <button onClick={() => {
           openWindow(data)
