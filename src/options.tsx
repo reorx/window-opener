@@ -158,7 +158,27 @@ const Options = () => {
           font-size: 14px;
           margin-bottom: 15px;
         `}>
-          Use mathematical expressions to set window dimensions and positions.
+          Use mathematical expressions to set window dimensions and positions. 
+          <button 
+            css={css`
+              background: none;
+              border: none;
+              color: #007cba;
+              cursor: pointer;
+              text-decoration: underline;
+              font-size: 14px;
+              padding: 0;
+              margin-left: 5px;
+              &:hover {
+                color: #005a87;
+              }
+            `}
+            onClick={() => {
+              (document.getElementById('context-explain-modal')! as HTMLDialogElement).showModal()
+            }}
+          >
+            Explain more
+          </button>
         </p>
         
         <div css={css`margin-bottom: 20px;`}>
@@ -233,6 +253,59 @@ const Options = () => {
             Copy example
           </button>
         </div>
+
+        <dialog id="context-explain-modal" css={css`
+          width: 500px;
+          max-width: 90%;
+          padding: 20px;
+          padding-top: 10px;
+          font-size: 15px;
+          line-height: 1.5;
+          &::backdrop {
+            background: rgba(100, 100, 100, 0.6);
+          }
+          ul {
+            padding-left: 1.5em;
+          }
+          li {
+            margin-bottom: 3px;
+            b {
+              font-family: monospace;
+            }
+          }
+        `}>
+          <form method="dialog">
+            <div>
+              <h3>What is context and how to use it?</h3>
+              <p>
+                Context is a set of variables that can be used to calculate the actual window size and position figures (<code>left</code>, <code>top</code>, <code>width</code>, <code>height</code>). Those figures can be defined as mathmatical expressions, such as <code>(screenWidth - 700) / 2</code> or <code>screenWidth - windowWidth - xOffset</code>, the variables used in the expressions must be from the context variables.
+              </p>
+              <p>There are two types of context variables, one is dynamic, the other is static. Static variables are assigned based on the current screen when the window item is created, you can click (Reset) to reset them.</p>
+              <p><b>Here's the list of dynamic variables:</b></p>
+              <ul>
+                <li><b>windowWidth</b>: {variableMeaningMap.windowWidth}</li>
+                <li><b>windowHeight</b>: {variableMeaningMap.windowHeight}</li>
+              </ul>
+              <p><b>Here's the list of static variables:</b></p>
+              <ul>
+                <li><b>screenWidth</b>: {variableMeaningMap.screenWidth}</li>
+                <li><b>screenHeight</b>: {variableMeaningMap.screenHeight}</li>
+                <li><b>xOffset</b>: {variableMeaningMap.xOffset}</li>
+                <li><b>yOffset</b>: {variableMeaningMap.yOffset}</li>
+              </ul>
+            </div>
+            <div css={css`
+              text-align: center;
+              margin-top: 20px;
+            `}>
+              <button value="cancel" css={css`
+                font-size: 20px;
+                padding: 10px;
+                width: 100px;
+              `}>OK</button>
+            </div>
+          </form>
+        </dialog>
       </div>
     </div>
   );

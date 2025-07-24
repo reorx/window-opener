@@ -283,16 +283,7 @@ const WindowItem = ({data, defaultId, windows, onDataChanged, onDelete, onWindow
           margin-bottom: 8px;
           display: flex;
         `}>
-          <div>Context
-            <button
-              css={[textButton, css`
-                margin-inline-start: 10px;
-              `]}
-              onClick={() => {
-                (document.getElementById('context-explain-modal')! as HTMLDialogElement).showModal()
-              }}
-          >(Explain)</button>
-          </div>
+          <div>Context</div>
           <button
             css={[textButton, css`
               margin-left: auto;
@@ -321,6 +312,7 @@ const WindowItem = ({data, defaultId, windows, onDataChanged, onDelete, onWindow
             font-family: monospace;
             margin-bottom: 3px;
             display: block;
+            cursor: help;
           }
 
           input {
@@ -337,7 +329,7 @@ const WindowItem = ({data, defaultId, windows, onDataChanged, onDelete, onWindow
         `}>{contextKeys.map(key => (
           <div key={key} css={css`
           `}>
-            <label>{key}</label>
+            <label title={(variableMeaningMap as any)[key]}>{key}</label>
             <input type="number" name={key}
               // using defaultValue causes the value not being changed when rerender,
               // the `key` here makes sure the whole input is recreated to avoid this problem
@@ -398,58 +390,6 @@ const WindowItem = ({data, defaultId, windows, onDataChanged, onDelete, onWindow
         }}>Delete</button>
       </div>
 
-      <dialog id="context-explain-modal" css={css`
-        width: 500px;
-        max-width: 90%;
-        padding: 20px;
-        padding-top: 10px;
-        font-size: 15px;
-        line-height: 1.5;
-        &::backdrop {
-          background: rgba(100, 100, 100, 0.6);
-        }
-        ul {
-          padding-left: 1.5em;
-        }
-        li {
-          margin-bottom: 3px;
-          b {
-            font-family: monospace;
-          }
-        }
-      `}>
-        <form method="dialog">
-          <div>
-            <h3>What is context and how to use it?</h3>
-            <p>
-              Context is a set of variables that can be used to calculate the actual window size and position figures (<code>left</code>, <code>top</code>, <code>width</code>, <code>height</code>). Those figures can be defined as mathmatical expressions, such as <code>(screenWidth - 700) / 2</code> or <code>screenWidth - windowWidth - xOffset</code>, the variables used in the expressions must be from the context variables.
-            </p>
-            <p>There are two types of context variables, one is dynamic, the other is static. Static variables are assigned based on the current screen when the window item is created, you can click (Reset) to reset them.</p>
-            <p><b>Here's the list of dynamic variables:</b></p>
-            <ul>
-              <li><b>windowWidth</b>: {variableMeaningMap.windowWidth}</li>
-              <li><b>windowHeight</b>: {variableMeaningMap.windowHeight}</li>
-            </ul>
-            <p><b>Here's the list of static variables:</b></p>
-            <ul>
-              <li><b>screenWidth</b>: {variableMeaningMap.screenWidth}</li>
-              <li><b>screenHeight</b>: {variableMeaningMap.screenHeight}</li>
-              <li><b>xOffset</b>: {variableMeaningMap.xOffset}</li>
-              <li><b>yOffset</b>: {variableMeaningMap.yOffset}</li>
-            </ul>
-          </div>
-          <div css={css`
-            text-align: center;
-            margin-top: 20px;
-          `}>
-            <button value="cancel" css={css`
-              font-size: 20px;
-              padding: 10px;
-              width: 100px;
-            `}>OK</button>
-          </div>
-        </form>
-      </dialog>
     </div>
   )
 }
