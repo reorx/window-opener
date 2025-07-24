@@ -7,7 +7,7 @@ import { BackupManager } from './BackupManager';
 import { IconAction, useSettingsStore, useStore } from './store';
 import { setActionBehavior } from './utils/action';
 import { colors, getLogger } from './utils/log';
-import { WindowsManager } from './WindowsManager';
+import { WindowsManager, variableMeaningMap } from './WindowsManager';
 import { createWindow, getStaticContext } from './window';
 
 
@@ -150,26 +150,40 @@ const Options = () => {
         height: fit-content;
         position: sticky;
         top: 15px;
+        color: #333;
       `}>
-        <h3 css={css`margin-top: 0;`}>Window Positioning Tips</h3>
+      <h3 css={css`margin-top: 0; font-size: 18px;`}>Window Positioning Tips</h3>
         
         <p css={css`
           font-size: 14px;
-          color: #666;
-          margin-bottom: 20px;
+          margin-bottom: 15px;
         `}>
-          Use mathematical expressions to set window dimensions and positions. Available variables:
+          Use mathematical expressions to set window dimensions and positions.
         </p>
-        <ul css={css`
-          font-size: 14px;
-          color: #666;
-          margin-bottom: 20px;
-          padding-left: 20px;
-        `}>
-          <li><code>screenWidth</code>, <code>screenHeight</code> - current screen's width or height</li>
-          <li><code>windowWidth</code>, <code>windowHeight</code> - current window's width or height</li>
-          <li><code>xOffset</code>, <code>yOffset</code> - current window's x/y offset</li>
-        </ul>
+        
+        <div css={css`margin-bottom: 20px;`}>
+          <h4 css={css`margin: 0 0 8px 0; font-size: 13px; color: #555;`}>Dynamic Variables:</h4>
+          <ul css={css`
+            font-size: 13px;
+            margin: 0 0 12px 0;
+            padding-left: 20px;
+          `}>
+            <li><code>windowWidth</code> - {variableMeaningMap.windowWidth}</li>
+            <li><code>windowHeight</code> - {variableMeaningMap.windowHeight}</li>
+          </ul>
+          
+          <h4 css={css`margin: 0 0 8px 0; font-size: 13px; color: #555;`}>Static Variables:</h4>
+          <ul css={css`
+            font-size: 13px;
+            margin: 0;
+            padding-left: 20px;
+          `}>
+            <li><code>screenWidth</code> - {variableMeaningMap.screenWidth}</li>
+            <li><code>screenHeight</code> - {variableMeaningMap.screenHeight}</li>
+            <li><code>xOffset</code> - {variableMeaningMap.xOffset}</li>
+            <li><code>yOffset</code> - {variableMeaningMap.yOffset}</li>
+          </ul>
+        </div>
 
         <div css={css`
           margin-bottom: 25px;

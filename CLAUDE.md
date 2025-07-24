@@ -53,7 +53,7 @@ Window Opener is a Chrome extension that allows users to open browser windows wi
 
 **Dynamic Window Positioning**:
 - Uses mathematical expressions for window dimensions
-- Context variables include screenWidth, screenHeight, windowWidth, windowHeight
+- Context variables for window positioning
 - Static context (xOffset, yOffset) for system UI offsets
 
 **Settings Management**:
@@ -112,3 +112,25 @@ When working with styles in this project, follow these practices:
   \`
   ```
 - **Prefer semantic class names**: Use descriptive class names like `normal`, `primary`, `secondary` rather than style-specific names
+
+## Context Variables for Window Positioning
+
+Context is a set of variables that can be used to calculate the actual window size and position figures (left, top, width, height). Those figures can be defined as mathematical expressions, such as `(screenWidth - 700) / 2` or `screenWidth - windowWidth - xOffset`. The variables used in the expressions must be from the context variables.
+
+There are two types of context variables:
+
+### Dynamic Variables
+- `windowWidth`: the width of the current window, useful if you want to open the window in a relative position
+- `windowHeight`: the height of the current window
+
+### Static Variables  
+Static variables are assigned based on the current screen when the window item is created.
+- `screenWidth`: the width of the screen
+- `screenHeight`: the height of the screen  
+- `xOffset`: the unavailable space in the x-axis of screen, such as MacOS Dock put on the left/right side of the screen
+- `yOffset`: the unavailable space in the y-axis of screen, such as MacOS menubar and Windows taskbar
+
+## Figures Specification
+
+- Figures can reference variables
+- Figures can reference each other, but circular references are not allowed

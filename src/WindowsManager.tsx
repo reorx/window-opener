@@ -7,6 +7,18 @@ import {
   staticContextKeys, getContext, CircularDependencyError,
 } from './window';
 
+export const variableMeaningMap = {
+  // Dynamic variables
+  windowWidth: 'the width of the current window, useful if you want to open the window in a relative position',
+  windowHeight: 'the height of the current window',
+  
+  // Static variables
+  screenWidth: 'the width of the screen',
+  screenHeight: 'the height of the screen',
+  xOffset: 'the unavailable space in the x-axis of screen, such as MacOS Dock put on the left/right side of the screen',
+  yOffset: 'the unavailable space in the y-axis of screen, such as MacOS menubar and Windows taskbar'
+};
+
 
 interface WindowsManagerProps {
   windows: WindowData[];
@@ -415,15 +427,15 @@ const WindowItem = ({data, defaultId, windows, onDataChanged, onDelete, onWindow
             <p>There are two types of context variables, one is dynamic, the other is static. Static variables are assigned based on the current screen when the window item is created, you can click (Reset) to reset them.</p>
             <p><b>Here's the list of dynamic variables:</b></p>
             <ul>
-              <li><b>windowWidth</b>: the width of the current window, useful if you want to open the window in a relative position.</li>
-              <li><b>windowHeight</b>: the height of the current window.</li>
+              <li><b>windowWidth</b>: {variableMeaningMap.windowWidth}</li>
+              <li><b>windowHeight</b>: {variableMeaningMap.windowHeight}</li>
             </ul>
             <p><b>Here's the list of static variables:</b></p>
             <ul>
-              <li><b>screenWidth</b>: the width of the screen</li>
-              <li><b>screenHeight</b>: the height of the screen</li>
-              <li><b>xOffset</b>: the unavailable space in the x-axis of screen, such as MacOS Dock put on the left/right side of the screen</li>
-              <li><b>yOffset</b>: the unavailable space in the y-axis of screen, such as MacOS menubar and Windows taskbar</li>
+              <li><b>screenWidth</b>: {variableMeaningMap.screenWidth}</li>
+              <li><b>screenHeight</b>: {variableMeaningMap.screenHeight}</li>
+              <li><b>xOffset</b>: {variableMeaningMap.xOffset}</li>
+              <li><b>yOffset</b>: {variableMeaningMap.yOffset}</li>
             </ul>
           </div>
           <div css={css`
