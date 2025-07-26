@@ -17,11 +17,11 @@ export interface WindowData {
 export const windowFigureKeys = ['left', 'top', 'width', 'height']
 
 export const variableMeaningMap = {
-  // Dynamic variables
   windowWidth: 'the width of the current window, useful if you want to open the window in a relative position',
   windowHeight: 'the height of the current window',
+  windowLeft: `the left distance of the current window relative to the screen it's in`,
+  windowTop: `the top distance of the current window relative to the screen it's in`,
 
-  // Static variables
   screenWidth: 'the width of the screen',
   screenHeight: 'the height of the screen',
   xOffset: 'the unavailable space in the x-axis of screen, such as MacOS Dock put on the left/right side of the screen',
@@ -50,8 +50,8 @@ export async function openWindow(data: WindowData) {
       focused: data.focused,
       width: figures.width,
       height: figures.height,
-      left: figures.left + context._screenLeft || 0,
-      top: figures.top + context._screenTop || 0,
+      left: figures.left + context._screenLeftAbs || 0,
+      top: figures.top + context._screenTopAbs || 0,
     }
 
     await chrome.windows.create(createArgs)
@@ -348,14 +348,16 @@ function createEnhancedErrorHtml(errorContext: any) {
 export interface Context {
   screenWidth: number;
   screenHeight: number;
-  _screenLeft: number;
-  _screenTop: number;
+  _screenLeftAbs: number;
+  _screenTopAbs: number;
   xOffset: number;
   yOffset: number;
   windowWidth: number;
   windowHeight: number;
   windowLeft: number;
   windowTop: number;
+  _windowLeftAbs: number;
+  _windowTopAbs: number;
   [key: string]: number;
 }
 
@@ -371,14 +373,17 @@ export async function getContext(): Promise<Context> {
   const bounds = display.bounds
   console.log(`* currentDisplay: bounds.left=${bounds.left} bounds.top=${bounds.top} bounds.width=${bounds.width} bounds.height=${bounds.height}`)
 
-  const [screenWidth, screenHeight, _screenLeft, _screenTop] = [bounds.width, bounds.height, bounds.left, bounds.top];
+  const [screenWidth, screenHeight, _screenLeftAbs, _screenTopAbs] = [bounds.width, bounds.height, bounds.left, bounds.top];
   const [xOffset, yOffset] = [screenWidth - display.workArea.width, screenHeight - display.workArea.height];
-  const [windowWidth, windowHeight, windowLeft, windowTop] = [window.width?? 0, window.height?? 0, window.left?? 0, window.top?? 0];
+  const [windowWidth, windowHeight, _windowLeftAbs, _windowTopAbs] = [window.width?? 0, window.height?? 0, window.left?? 0, window.top?? 0];
+  const [windowLeft, windowTop] = [_windowLeftAbs - _screenLeftAbs, _windowTopAbs - _screenTopAbs];
   return {
     screenWidth,
     screenHeight,
-    _screenLeft,
-    _screenTop,
+    _screenLeftAbs,
+    _screenTopAbs,
+    _windowLeftAbs,
+    _windowTopAbs,
     xOffset,
     yOffset,
     windowWidth,

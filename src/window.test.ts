@@ -10,11 +10,11 @@ corner of the topmost-leftmost monitor.
 For our test scenarios, we simulate two monitors:
 
 1. Top Monitor (Primary): 1920x1080 resolution
-   - Position: _screenLeft = 0, _screenTop = 0
+   - Position: _screenLeftAbs = 0, _screenTopAbs = 0
    - Available area: full screen (assuming no system UI offsets for simplicity)
 
 2. Bottom Monitor (Secondary): 1440x720 resolution  
-   - Position: _screenLeft = 240, _screenTop = 1080
+   - Position: _screenLeftAbs = 240, _screenTopAbs = 1080
    - The horizontal offset (240) centers this narrower monitor below the primary monitor:
      (1920 - 1440) / 2 = 240
 
@@ -44,14 +44,16 @@ describe('Multi-Monitor Window Positioning Tests', () => {
     const topMonitorContext = {
       screenWidth: 1920,
       screenHeight: 1080,
-      _screenLeft: 0,
-      _screenTop: 0,
+      _screenLeftAbs: 0,
+      _screenTopAbs: 0,
+      _windowLeftAbs: 100,
+      _windowTopAbs: 124,
       xOffset: 0,
       yOffset: 24, // macOS menubar
       windowWidth: 800,
       windowHeight: 600,
-      windowLeft: 100,
-      windowTop: 100,
+      windowLeft: 100, // relative to screen: _windowLeftAbs - _screenLeftAbs
+      windowTop: 100,  // relative to screen: _windowTopAbs - _screenTopAbs
     };
 
     it('should handle "Fill Right of Current Window" example', () => {
@@ -107,20 +109,40 @@ describe('Multi-Monitor Window Positioning Tests', () => {
         height: 600
       });
     });
+
+    it('should fill bottom area under current window on top monitor', () => {
+      const data = createTestWindow();
+      data.name = 'Fill Bottom Area';
+      data.left = 'windowLeft';
+      data.top = 'windowTop + windowHeight';
+      data.width = 'windowWidth';
+      data.height = 'screenHeight - windowTop - windowHeight';
+
+      const result = calFigures(data, topMonitorContext);
+
+      expect(result).toEqual({
+        left: 100,  // same as current window
+        top: 700,   // 100 + 600
+        width: 800, // same width as current window
+        height: 380 // 1080 - 100 - 600 - remaining available height
+      });
+    });
   });
 
   describe('Bottom Monitor (1440x720 at 240,1080) - Window positioned on secondary monitor', () => {
     const bottomMonitorContext = {
       screenWidth: 1440,
       screenHeight: 720,
-      _screenLeft: 240,
-      _screenTop: 1080,
+      _screenLeftAbs: 240,
+      _screenTopAbs: 1080,
+      _windowLeftAbs: 440, // absolute position: 240 + 200
+      _windowTopAbs: 1230, // absolute position: 1080 + 150
       xOffset: 0,
       yOffset: 0, // no system UI on secondary monitor
       windowWidth: 600,
       windowHeight: 400,
-      windowLeft: 240 + 200, // absolute position: 240 (monitor offset) + 200 (relative position)
-      windowTop: 1080 + 150,  // absolute position: 1080 (monitor offset) + 150 (relative position)
+      windowLeft: 200, // relative to screen: _windowLeftAbs - _screenLeftAbs = 440 - 240
+      windowTop: 150,  // relative to screen: _windowTopAbs - _screenTopAbs = 1230 - 1080
     };
 
     it('should handle "Fill Right of Current Window" example on bottom monitor', () => {
@@ -162,28 +184,36 @@ describe('Multi-Monitor Window Positioning Tests', () => {
     it('should position window relative to current window on bottom monitor', () => {
       const data = createTestWindow();
       data.name = 'Below Current';
-      data.left = 'windowLeft - ' + (240 + 200); // convert absolute to relative position
-      data.top = 'windowTop - ' + (1080 + 150) + ' + windowHeight + 20'; // convert absolute to relative, then add offset
+      data.left = 'windowLeft';
+      data.top = 'windowTop + windowHeight + 20';
       data.width = 'windowWidth';
       data.height = '200';
 
-      // Simplified for relative positioning within the monitor
-      const relativeContext = {
-        ...bottomMonitorContext,
-        windowLeft: 200,  // relative position within bottom monitor
-        windowTop: 150,   // relative position within bottom monitor
-      };
-
-      data.left = 'windowLeft';
-      data.top = 'windowTop + windowHeight + 20';
-
-      const result = calFigures(data, relativeContext);
+      const result = calFigures(data, bottomMonitorContext);
 
       expect(result).toEqual({
         left: 200,  // same x position as current window
         top: 570,   // 150 + 400 + 20
         width: 600,
         height: 200
+      });
+    });
+
+    it('should fill bottom area under current window on bottom monitor', () => {
+      const data = createTestWindow();
+      data.name = 'Fill Bottom Area';
+      data.left = 'windowLeft';
+      data.top = 'windowTop + windowHeight';
+      data.width = 'windowWidth';
+      data.height = 'screenHeight - windowTop - windowHeight';
+
+      const result = calFigures(data, bottomMonitorContext);
+
+      expect(result).toEqual({
+        left: 200,  // same as current window
+        top: 550,   // 150 + 400
+        width: 600, // same width as current window
+        height: 170 // 720 - 150 - 400 - remaining available height
       });
     });
   });
