@@ -8,7 +8,7 @@ import { IconAction, useSettingsStore } from './store';
 import { setActionBehavior } from './utils/action';
 import { colors, getLogger } from './utils/log';
 import { WindowsManager } from './WindowsManager';
-import { createWindow, variableMeaningMap, getContext } from './window';
+import { createWindow, variableMeaningMap, getContext, exampleWindows } from './window';
 import { themeColor } from './styles';
 import {useStore} from './store';
 
