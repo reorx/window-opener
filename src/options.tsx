@@ -4,21 +4,22 @@ import { createRoot } from 'react-dom/client';
 import { css } from '@emotion/react';
 
 import { BackupManager } from './BackupManager';
-import { IconAction, useSettingsStore, useStore } from './store';
+import { IconAction, useSettingsStore } from './store';
 import { setActionBehavior } from './utils/action';
 import { colors, getLogger } from './utils/log';
 import { WindowsManager } from './WindowsManager';
-import { createWindow, variableMeaningMap } from './window';
+import { createWindow, variableMeaningMap, getContext } from './window';
 import { themeColor } from './styles';
+import {useStore} from './store';
 
 
 const lg = getLogger('options', colors.bgYellowBright)
 
 lg.info('options.ts')
 
-chrome.windows.getCurrent().then(window => {
+getContext().then(context => {
   useStore.setState({
-    chromeWindow: window
+    context,
   })
 })
 
@@ -29,9 +30,9 @@ chrome.windows.onBoundsChanged.addListener(() => {
   if (nowTs - boundsChangedTs > 300) {
     boundsChangedTs = nowTs
     lg.info('bounds changed 300ms after last time')
-    chrome.windows.getCurrent().then(window => {
+    getContext().then(context => {
       useStore.setState({
-        chromeWindow: window
+        context,
       })
     })
   }
@@ -41,7 +42,7 @@ const Options = () => {
   const [settings, setSettings, isPersistent, error, isInitialStateResolved] = useSettingsStore();
   // lg.log('render Options', isPersistent, isInitialStateResolved)
 
-  const chromeWindow = useStore((state) => state.chromeWindow)
+  const context = useStore((state) => state.context)
 
   // useEffect(() => {
   // }, [])
@@ -65,7 +66,7 @@ const Options = () => {
     handleValueChange(e)
   }
 
-  if (!isInitialStateResolved || !chromeWindow) {
+  if (!isInitialStateResolved || !context) {
     return (
       <div>loading</div>
     )

@@ -1,7 +1,7 @@
 import { createChromeStorageStateHookSync } from 'use-chrome-storage';
 import { create } from 'zustand';
 
-import { WindowData } from './window';
+import { WindowData, Context } from './window';
 
 
 /* settings */
@@ -36,9 +36,9 @@ export const getSettings = async (): Promise<Settings>  => {
 /* app store */
 
 export interface AppStore {
-  chromeWindow: chrome.windows.Window|null
+  context: Context|null
 }
 
 export const useStore = create<AppStore>()((set) => ({
-  chromeWindow: null,
+  context: null,
 }))

@@ -26,6 +26,7 @@
   "permissions": [
     "storage",
     "tabs",
+    "system.display",
     "activeTab"
   ]
 }

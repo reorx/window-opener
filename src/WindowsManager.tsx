@@ -16,8 +16,7 @@ interface WindowsManagerProps {
 
 export const WindowsManager = ({windows, onWindowsChange}: WindowsManagerProps) => {
   const defaultId = windows.find(item => item.default)?.id
-  const chromeWindow = useStore(state => state.chromeWindow)
-  const context = useMemo(() => getContext(), [chromeWindow])
+  const context = useStore((state) => state.context)
 
   return (
     <div css={css`
@@ -30,7 +29,7 @@ export const WindowsManager = ({windows, onWindowsChange}: WindowsManagerProps) 
             data={item}
             defaultId={defaultId}
             windows={windows}
-            context={context}
+            context={context!}
             onWindowsChange={onWindowsChange}
             onDataChanged={(data) => {
               // console.log('onDataChanged', data)
