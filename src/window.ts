@@ -48,7 +48,10 @@ export async function openWindow(data: WindowData) {
       url: data.url || undefined,
       type: data.type as chrome.windows.createTypeEnum,
       focused: data.focused,
-      ...figures
+      width: figures.width,
+      height: figures.height,
+      left: figures.left + context._screenLeft || 0,
+      top: figures.top + context._screenTop || 0,
     }
 
     await chrome.windows.create(createArgs)
@@ -345,32 +348,43 @@ function createEnhancedErrorHtml(errorContext: any) {
 export interface Context {
   screenWidth: number;
   screenHeight: number;
+  _screenLeft: number;
+  _screenTop: number;
   xOffset: number;
   yOffset: number;
   windowWidth: number;
   windowHeight: number;
+  windowLeft: number;
+  windowTop: number;
   [key: string]: number;
 }
 
-export const contextKeys = ['screenWidth', 'screenHeight', 'xOffset', 'yOffset', 'windowWidth', 'windowHeight']
+export const contextKeys = ['screenWidth', 'screenHeight', 'xOffset', 'yOffset', 'windowWidth', 'windowHeight', 'windowLeft', 'windowTop']
 
 export async function getContext(): Promise<Context> {
   const window = await chrome.windows.getCurrent();
+  console.log(`* window: left=${window.left} top=${window.top} width=${window.width} height=${window.height}`)
   const display = await getWindowDisplay(window);
   if (!display) {
     throw Error('could not get display by getWindowDisplay')
   }
+  const bounds = display.bounds
+  console.log(`* currentDisplay: bounds.left=${bounds.left} bounds.top=${bounds.top} bounds.width=${bounds.width} bounds.height=${bounds.height}`)
 
-  const [screenWidth, screenHeight] = [display.bounds.width, display.bounds.height];
+  const [screenWidth, screenHeight, _screenLeft, _screenTop] = [bounds.width, bounds.height, bounds.left, bounds.top];
   const [xOffset, yOffset] = [screenWidth - display.workArea.width, screenHeight - display.workArea.height];
-  const [windowWidth, windowHeight] = [window.width?? 0, window.height?? 0];
+  const [windowWidth, windowHeight, windowLeft, windowTop] = [window.width?? 0, window.height?? 0, window.left?? 0, window.top?? 0];
   return {
     screenWidth,
     screenHeight,
+    _screenLeft,
+    _screenTop,
     xOffset,
     yOffset,
     windowWidth,
     windowHeight,
+    windowLeft,
+    windowTop
   }
 }
 
@@ -427,7 +441,6 @@ export class CircularDependencyError extends Error {
 // Analyze dependencies between figure expressions
 function analyzeDependencies(data: WindowData): Map<string, string[]> {
   const dependencies = new Map<string, string[]>();
-  const availableVars = new Set(['screenWidth', 'screenHeight', 'windowWidth', 'windowHeight', 'xOffset', 'yOffset']);
 
   for (const key of windowFigureKeys) {
     const expr = (data as any)[key];

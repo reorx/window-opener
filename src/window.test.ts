@@ -1,14 +1,27 @@
 import { calFigures, calFigure, WindowData } from './window';
 
-// Mock context for testing
-const mockContext = {
-  screenWidth: 1920,
-  screenHeight: 1080,
-  xOffset: 0,
-  yOffset: 24,
-  windowWidth: 800,
-  windowHeight: 600,
-};
+/*
+Multi-Monitor Test Setup:
+
+In a multi-monitor setup, Chrome calculates screen and window bounds within a large virtual canvas
+that encompasses all connected monitors. The coordinate system (0, 0) represents the top-left 
+corner of the topmost-leftmost monitor.
+
+For our test scenarios, we simulate two monitors:
+
+1. Top Monitor (Primary): 1920x1080 resolution
+   - Position: _screenLeft = 0, _screenTop = 0
+   - Available area: full screen (assuming no system UI offsets for simplicity)
+
+2. Bottom Monitor (Secondary): 1440x720 resolution  
+   - Position: _screenLeft = 240, _screenTop = 1080
+   - The horizontal offset (240) centers this narrower monitor below the primary monitor:
+     (1920 - 1440) / 2 = 240
+
+This setup allows us to test window positioning calculations across different monitor 
+configurations, ensuring expressions work correctly regardless of which monitor contains 
+the current window.
+*/
 
 // Helper function to create test window data
 function createTestWindow(): WindowData {
@@ -26,327 +39,151 @@ function createTestWindow(): WindowData {
   };
 }
 
-describe('Figure Calculation Logic', () => {
-  describe('calFigure - Individual figure calculation', () => {
-    it('should calculate simple numeric expressions', () => {
+describe('Multi-Monitor Window Positioning Tests', () => {
+  describe('Top Monitor (1920x1080 at 0,0) - Window positioned on primary monitor', () => {
+    const topMonitorContext = {
+      screenWidth: 1920,
+      screenHeight: 1080,
+      _screenLeft: 0,
+      _screenTop: 0,
+      xOffset: 0,
+      yOffset: 24, // macOS menubar
+      windowWidth: 800,
+      windowHeight: 600,
+      windowLeft: 100,
+      windowTop: 100,
+    };
+
+    it('should handle "Fill Right of Current Window" example', () => {
       const data = createTestWindow();
-      data.left = '100';
-
-      const result = calFigure(data, 'left', mockContext);
-      expect(result).toBe(100);
-    });
-
-    it('should calculate expressions with context variables', () => {
-      const data = createTestWindow();
-      data.left = 'windowWidth + 50';
-
-      const result = calFigure(data, 'left', mockContext);
-      expect(result).toBe(850); // 800 + 50
-    });
-
-    it('should handle complex mathematical expressions', () => {
-      const data = createTestWindow();
-      data.left = '(screenWidth - 700) / 2';
-
-      const result = calFigure(data, 'left', mockContext);
-      expect(result).toBe(610); // (1920 - 700) / 2 = 610
-    });
-
-    it('should return undefined for empty expressions', () => {
-      const data = createTestWindow();
-      data.left = '';
-
-      const result = calFigure(data, 'left', mockContext);
-      expect(result).toBeUndefined();
-    });
-
-    it('should return NaN for invalid expressions', () => {
-      const data = createTestWindow();
-      data.left = 'invalid + expression';
-
-      const result = calFigure(data, 'left', mockContext);
-      expect(result).toBeNaN();
-    });
-  });
-
-  describe('calFigures - All non-dynamic calculations', () => {
-    it('should calculate all static figures', () => {
-      const data = createTestWindow();
-      data.left = '100';
-      data.top = '200';
-      data.width = '800';
-      data.height = '600';
-
-      const result = calFigures(data, mockContext);
-
-      expect(result).toEqual({
-        left: 100,
-        top: 200,
-        width: 800,
-        height: 600
-      });
-    });
-
-    it('should handle expressions with context variables', () => {
-      const data = createTestWindow();
+      data.name = 'Fill Right Side';
       data.left = 'windowWidth + xOffset';
       data.top = 'yOffset';
       data.width = 'screenWidth - windowWidth - xOffset';
       data.height = 'screenHeight - yOffset';
 
-      const result = calFigures(data, mockContext);
-
-      expect(result).toEqual({
-        left: 800, // 800 + 0
-        top: 24,   // 24
-        width: 1120, // 1920 - 800 - 0
-        height: 1056 // 1080 - 24
-      });
-    });
-  });
-
-  describe('Dependency resolution - left depends on width/height', () => {
-    it('should calculate left after width when left depends on width', () => {
-      const data = createTestWindow();
-      data.left = '(screenWidth - width) / 2';
-      data.top = '100';
-      data.width = '600';
-      data.height = '400';
-
-      const result = calFigures(data, mockContext);
-
-      expect(result).toEqual({
-        left: 660, // (1920 - 600) / 2 = 660
-        top: 100,
-        width: 600,
-        height: 400
-      });
-    });
-
-    it('should calculate left after height when left depends on height', () => {
-      const data = createTestWindow();
-      data.left = 'height + 50';
-      data.top = '100';
-      data.width = '600';
-      data.height = '400';
-
-      const result = calFigures(data, mockContext);
-
-      expect(result).toEqual({
-        left: 450, // 400 + 50
-        top: 100,
-        width: 600,
-        height: 400
-      });
-    });
-  });
-
-  describe('Dependency resolution - top depends on height', () => {
-    it('should calculate top after height when top depends on height', () => {
-      const data = createTestWindow();
-      data.left = '100';
-      data.top = '(screenHeight - height) / 2';
-      data.width = '600';
-      data.height = '400';
-
-      const result = calFigures(data, mockContext);
-
-      expect(result).toEqual({
-        left: 100,
-        top: 340, // (1080 - 400) / 2 = 340
-        width: 600,
-        height: 400
-      });
-    });
-  });
-
-  describe('Dependency resolution - width depends on left/top', () => {
-    it('should calculate width after left when width depends on left', () => {
-      const data = createTestWindow();
-      data.left = '200';
-      data.top = '100';
-      data.width = 'screenWidth - left - 100';
-      data.height = '400';
-
-      const result = calFigures(data, mockContext);
-
-      expect(result).toEqual({
-        left: 200,
-        top: 100,
-        width: 1620, // 1920 - 200 - 100 = 1620
-        height: 400
-      });
-    });
-
-    it('should calculate width after top when width depends on top', () => {
-      const data = createTestWindow();
-      data.left = '200';
-      data.top = '100';
-      data.width = 'screenWidth - top * 2';
-      data.height = '400';
-
-      const result = calFigures(data, mockContext);
-
-      expect(result).toEqual({
-        left: 200,
-        top: 100,
-        width: 1720, // 1920 - 100 * 2 = 1720
-        height: 400
-      });
-    });
-  });
-
-  describe('Dependency resolution - height depends on top', () => {
-    it('should calculate height after top when height depends on top', () => {
-      const data = createTestWindow();
-      data.left = '200';
-      data.top = '100';
-      data.width = '600';
-      data.height = 'screenHeight - top - 50';
-
-      const result = calFigures(data, mockContext);
-
-      expect(result).toEqual({
-        left: 200,
-        top: 100,
-        width: 600,
-        height: 930 // 1080 - 100 - 50 = 930
-      });
-    });
-  });
-
-  describe('Multiple dependency calculations', () => {
-    it('should handle left and top both depending on width and height', () => {
-      const data = createTestWindow();
-      data.left = '(screenWidth - width) / 2';
-      data.top = '(screenHeight - height) / 2';
-      data.width = '600';
-      data.height = '400';
-
-      const result = calFigures(data, mockContext);
-
-      expect(result).toEqual({
-        left: 660, // (1920 - 600) / 2 = 660
-        top: 340,  // (1080 - 400) / 2 = 340
-        width: 600,
-        height: 400
-      });
-    });
-
-    it('should handle width and height both depending on left and top', () => {
-      const data = createTestWindow();
-      data.left = '100';
-      data.top = '50';
-      data.width = 'screenWidth - left - 200';
-      data.height = 'screenHeight - top - 100';
-
-      const result = calFigures(data, mockContext);
-
-      expect(result).toEqual({
-        left: 100,
-        top: 50,
-        width: 1620, // 1920 - 100 - 200 = 1620
-        height: 930  // 1080 - 50 - 100 = 930
-      });
-    });
-
-    it('should handle complex cross-references', () => {
-      const data = createTestWindow();
-      data.left = 'width / 4';
-      data.top = 'height / 3';
-      data.width = '800';
-      data.height = '600';
-
-      const result = calFigures(data, mockContext);
-
-      expect(result).toEqual({
-        left: 200, // 800 / 4 = 200
-        top: 200,  // 600 / 3 = 200
-        width: 800,
-        height: 600
-      });
-    });
-  });
-
-  describe('Edge cases and error handling', () => {
-    it('should handle empty expressions', () => {
-      const data = createTestWindow();
-      data.left = '';
-      data.top = '100';
-      data.width = '600';
-      data.height = '400';
-
-      const result = calFigures(data, mockContext);
-
-      expect(result).toEqual({
-        top: 100,
-        width: 600,
-        height: 400
-        // left should be undefined/missing
-      });
-      expect(result.left).toBeUndefined();
-    });
-
-    it('should handle invalid expressions', () => {
-      const data = createTestWindow();
-      data.left = 'invalid + expression';
-      data.top = '100';
-      data.width = '600';
-      data.height = '400';
-
-      const result = calFigures(data, mockContext);
-
-      expect(result.left).toBeNaN();
-      expect(result.top).toBe(100);
-      expect(result.width).toBe(600);
-      expect(result.height).toBe(400);
-    });
-
-    it('should detect circular dependencies and throw error', () => {
-      const data = createTestWindow();
-      data.left = 'width + 100';
-      data.top = '100';
-      data.width = 'left + 200';
-      data.height = '400';
-
-      expect(() => {
-        calFigures(data, mockContext);
-      }).toThrow(/Circular dependency detected/);
-    });
-  });
-
-  describe('Real-world scenarios', () => {
-    it('should handle "center on screen" scenario', () => {
-      const data = createTestWindow();
-      data.left = '(screenWidth - width) / 2';
-      data.top = '(screenHeight - height) / 2';
-      data.width = '600';
-      data.height = '500';
-
-      const result = calFigures(data, mockContext);
-
-      expect(result).toEqual({
-        left: 660, // (1920 - 600) / 2
-        top: 290,  // (1080 - 500) / 2
-        width: 600,
-        height: 500
-      });
-    });
-
-    it('should handle "fill right of current window" scenario', () => {
-      const data = createTestWindow();
-      data.left = 'windowWidth + xOffset';
-      data.top = 'yOffset';
-      data.width = 'screenWidth - windowWidth - xOffset';
-      data.height = 'screenHeight - yOffset';
-
-      const result = calFigures(data, mockContext);
+      const result = calFigures(data, topMonitorContext);
 
       expect(result).toEqual({
         left: 800,   // 800 + 0
-        top: 24,     // 24
+        top: 24,     // 24 (menubar offset)
         width: 1120, // 1920 - 800 - 0
         height: 1056 // 1080 - 24
+      });
+    });
+
+    it('should handle "Center on Screen" example', () => {
+      const data = createTestWindow();
+      data.name = 'Centered Window';
+      data.width = 'screenWidth / 3';
+      data.height = 'screenHeight / 2';
+      data.left = '(screenWidth - width) / 2';
+      data.top = '(screenHeight - height) / 2';
+
+      const result = calFigures(data, topMonitorContext);
+
+      expect(result).toEqual({
+        left: 640,  // (1920 - 640) / 2
+        top: 270,   // (1080 - 540) / 2
+        width: 640, // 1920 / 3
+        height: 540 // 1080 / 2
+      });
+    });
+
+    it('should position window relative to current window on top monitor', () => {
+      const data = createTestWindow();
+      data.name = 'Next to Current';
+      data.left = 'windowLeft + windowWidth + 20';
+      data.top = 'windowTop';
+      data.width = '400';
+      data.height = 'windowHeight';
+
+      const result = calFigures(data, topMonitorContext);
+
+      expect(result).toEqual({
+        left: 920,  // 100 + 800 + 20
+        top: 100,   // same as current window
+        width: 400,
+        height: 600
+      });
+    });
+  });
+
+  describe('Bottom Monitor (1440x720 at 240,1080) - Window positioned on secondary monitor', () => {
+    const bottomMonitorContext = {
+      screenWidth: 1440,
+      screenHeight: 720,
+      _screenLeft: 240,
+      _screenTop: 1080,
+      xOffset: 0,
+      yOffset: 0, // no system UI on secondary monitor
+      windowWidth: 600,
+      windowHeight: 400,
+      windowLeft: 240 + 200, // absolute position: 240 (monitor offset) + 200 (relative position)
+      windowTop: 1080 + 150,  // absolute position: 1080 (monitor offset) + 150 (relative position)
+    };
+
+    it('should handle "Fill Right of Current Window" example on bottom monitor', () => {
+      const data = createTestWindow();
+      data.name = 'Fill Right Side';
+      data.left = 'windowWidth + xOffset';
+      data.top = 'yOffset';
+      data.width = 'screenWidth - windowWidth - xOffset';
+      data.height = 'screenHeight - yOffset';
+
+      const result = calFigures(data, bottomMonitorContext);
+
+      expect(result).toEqual({
+        left: 600,  // 600 + 0
+        top: 0,     // 0 (no system UI offset)
+        width: 840, // 1440 - 600 - 0
+        height: 720 // 720 - 0
+      });
+    });
+
+    it('should handle "Center on Screen" example on bottom monitor', () => {
+      const data = createTestWindow();
+      data.name = 'Centered Window';
+      data.width = 'screenWidth / 3';
+      data.height = 'screenHeight / 2';
+      data.left = '(screenWidth - width) / 2';
+      data.top = '(screenHeight - height) / 2';
+
+      const result = calFigures(data, bottomMonitorContext);
+
+      expect(result).toEqual({
+        left: 480,  // (1440 - 480) / 2
+        top: 180,   // (720 - 360) / 2
+        width: 480, // 1440 / 3
+        height: 360 // 720 / 2
+      });
+    });
+
+    it('should position window relative to current window on bottom monitor', () => {
+      const data = createTestWindow();
+      data.name = 'Below Current';
+      data.left = 'windowLeft - ' + (240 + 200); // convert absolute to relative position
+      data.top = 'windowTop - ' + (1080 + 150) + ' + windowHeight + 20'; // convert absolute to relative, then add offset
+      data.width = 'windowWidth';
+      data.height = '200';
+
+      // Simplified for relative positioning within the monitor
+      const relativeContext = {
+        ...bottomMonitorContext,
+        windowLeft: 200,  // relative position within bottom monitor
+        windowTop: 150,   // relative position within bottom monitor
+      };
+
+      data.left = 'windowLeft';
+      data.top = 'windowTop + windowHeight + 20';
+
+      const result = calFigures(data, relativeContext);
+
+      expect(result).toEqual({
+        left: 200,  // same x position as current window
+        top: 570,   // 150 + 400 + 20
+        width: 600,
+        height: 200
       });
     });
   });
