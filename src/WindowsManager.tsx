@@ -260,24 +260,29 @@ const WindowItem = ({data, defaultId, windows, context, onDataChanged, onDelete,
         </div>
       )}
 
-      <div css={css`
+      <details css={css`
         color: #666;
-        background-color: #eee;
-        padding: 8px;
         margin-bottom: 8px;
+        
+        summary {
+          cursor: pointer;
+          font-weight: 500;
+          color: #888;
+          margin-bottom: 3px;
+          
+          &:hover {
+            color: #333;
+          }
+        }
       `}>
-        <div css={css`
-          margin-bottom: 8px;
-          display: flex;
-        `}>
-          <div>Context</div>
-        </div>
+        <summary>Context</summary>
         <div css={css`
           display: flex;
           justify-content: space-between;
-          margin-bottom: 8px;
           flex-wrap: wrap;
-          gap: 8px;
+          gap: 12px;
+          background-color: #eee;
+          padding: 8px;
           
           @media (max-width: 1000px) {
             justify-content: flex-start;
@@ -318,7 +323,7 @@ const WindowItem = ({data, defaultId, windows, context, onDataChanged, onDelete,
             />
           </div>))}
         </div>
-      </div>
+      </details>
 
       {dataError && (
         <div css={css`
