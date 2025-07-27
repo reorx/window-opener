@@ -72,21 +72,15 @@ const Options = () => {
     )
   }
 
-  const createExampleWindow = (example: 'fill-right' | 'center') => {
+  const createExampleWindow = (exampleKey: 'fill-right' | 'centered') => {
     const win = createWindow()
-    win.name = example === 'fill-right' ? 'Fill Right Side' : 'Centered Window'
+    const example = exampleWindows[exampleKey]
 
-    if (example === 'fill-right') {
-      win.left = 'windowWidth + xOffset'
-      win.top = 'yOffset'
-      win.width = 'screenWidth - windowWidth - xOffset'
-      win.height = 'screenHeight - yOffset'
-    } else {
-      win.width = 'screenWidth / 3'
-      win.height = 'screenHeight / 2'
-      win.left = '(screenWidth - width) / 2'
-      win.top = '(screenHeight - height) / 2'
-    }
+    win.name = example.name
+    win.left = example.left
+    win.top = example.top
+    win.width = example.width
+    win.height = example.height
 
     const updatedWindows = [...settings.windows, win]
     setSettingsSingle('windows', updatedWindows)
@@ -211,7 +205,7 @@ const Options = () => {
           border-radius: 4px;
           background-color: white;
         `}>
-          <h4 css={css`margin: 0 0 10px 0; color: #333;`}>Fill Right of Current Window</h4>
+          <h4 css={css`margin: 0 0 10px 0; color: #333;`}>{exampleWindows['fill-right'].name}</h4>
           <div css={css`
             font-family: monospace;
             font-size: 12px;
@@ -219,10 +213,10 @@ const Options = () => {
             margin-bottom: 10px;
             line-height: 1.4;
           `}>
-            left = windowWidth + xOffset<br/>
-            top = yOffset<br/>
-            width = screenWidth - windowWidth - xOffset<br/>
-            height = screenHeight - yOffset
+            left = {exampleWindows['fill-right'].left}<br/>
+            top = {exampleWindows['fill-right'].top}<br/>
+            width = {exampleWindows['fill-right'].width}<br/>
+            height = {exampleWindows['fill-right'].height}
           </div>
           <button onClick={() => createExampleWindow('fill-right')}>
             Copy example
@@ -235,7 +229,7 @@ const Options = () => {
           border-radius: 4px;
           background-color: white;
         `}>
-          <h4 css={css`margin: 0 0 10px 0; color: #333;`}>Center on Screen</h4>
+          <h4 css={css`margin: 0 0 10px 0; color: #333;`}>{exampleWindows['centered'].name}</h4>
           <div css={css`
             font-family: monospace;
             font-size: 12px;
@@ -243,12 +237,12 @@ const Options = () => {
             margin-bottom: 10px;
             line-height: 1.4;
           `}>
-            width = screenWidth / 3<br/>
-            height = screenHeight / 2<br/>
-            left = (screenWidth - width) / 2<br/>
-            top = (screenHeight - height) / 2
+            left = {exampleWindows['centered'].left}<br/>
+            top = {exampleWindows['centered'].top}<br/>
+            width = {exampleWindows['centered'].width}<br/>
+            height = {exampleWindows['centered'].height}
           </div>
-          <button onClick={() => createExampleWindow('center')}>
+          <button onClick={() => createExampleWindow('centered')}>
             Copy example
           </button>
         </div>

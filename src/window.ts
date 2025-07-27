@@ -1,17 +1,21 @@
 import { Parser } from 'expr-eval';
+import { showErrorInNewWindow } from './utils/debugging';
 
 
-export interface WindowData {
-  id: string;
+interface WindowDataCore {
   name: string;
-  url: string;
-  type: string;
-  focused: boolean;
-  default: boolean;
   left: string;
   top: string;
   width: string;
   height: string;
+}
+
+export interface WindowData extends WindowDataCore {
+  id: string;
+  url: string;
+  type: string;
+  focused: boolean;
+  default: boolean;
 }
 
 export const windowFigureKeys = ['left', 'top', 'width', 'height']
@@ -28,6 +32,23 @@ export const variableMeaningMap = {
   yOffset: 'the unavailable space in the y-axis of screen, such as MacOS menubar and Windows taskbar'
 };
 
+export const exampleWindows: Record<string, WindowDataCore> = {
+  'fill-right': {
+    name: 'Fill Right Side',
+    left: 'windowWidth + windowLeft',
+    top: 'windowTop',
+    width: 'screenWidth - left',
+    height: 'windowHeight',
+  },
+  'centered': {
+    name: 'Centered',
+    width: 'screenWidth / 3',
+    height: 'screenHeight / 2',
+    left: '(screenWidth - width) / 2',
+    top: '(screenHeight - height) / 2',
+  },
+}
+
 
 export async function openWindow(data: WindowData) {
   let chromeWindow: chrome.windows.Window | null = null;
@@ -40,23 +61,23 @@ export async function openWindow(data: WindowData) {
     throw new Error('failed to get current window in openWindow')
   }
   const context = await getContext()
+  figures = calFigures(data, context)
 
   try {
-    figures = calFigures(data, context)
-
     createArgs = {
       url: data.url || undefined,
       type: data.type as chrome.windows.createTypeEnum,
       focused: data.focused,
       width: figures.width,
       height: figures.height,
-      left: figures.left + context._screenLeftAbs || 0,
-      top: figures.top + context._screenTopAbs || 0,
+      left: figures.left + context._screenLeftAbs,
+      top: figures.top + context._screenTopAbs,
     }
 
     await chrome.windows.create(createArgs)
   } catch (err) {
     await showErrorInNewWindow(data, context, chromeWindow, figures, createArgs, err as Error);
+    throw err
   }
 }
 
