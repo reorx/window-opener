@@ -31,7 +31,12 @@ const Popup = () => {
   // Handle keyboard navigation
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (windows.length === 0) return
+      //if (windows.length === 0) return
+
+      // Allow Tab key to pass through for focus management
+      if (e.key === 'Tab') {
+        return
+      }
 
       switch (e.key) {
         case 'ArrowUp':
@@ -46,7 +51,7 @@ const Popup = () => {
           e.preventDefault()
           if (windows[selectedIndex]) {
             openWindow(windows[selectedIndex])
-            window.close()
+            //window.close()
           }
           break
       }
@@ -66,41 +71,41 @@ const Popup = () => {
       }
     }
 
-    document.addEventListener('keydown', handleKeyDown)
-    return () => document.removeEventListener('keydown', handleKeyDown)
+    if (containerRef.current) {
+      containerRef.current.addEventListener('keydown', handleKeyDown)
+      return () => containerRef.current?.removeEventListener('keydown', handleKeyDown)
+    }
   }, [windows, selectedIndex])
 
   // Focus container on mount for keyboard events
   useEffect(() => {
+    //alert('containerRef: ' + containerRef.current)
     if (containerRef.current) {
       containerRef.current.focus()
     }
   }, [])
 
-  if (!isInitialStateResolved) {
-    return (
-      <div>loading</div>
-    )
-  }
-
   return (
-    <div 
-      ref={containerRef}
-      tabIndex={0}
+    <div
       css={css`
-        outline: none;
+        *:focus {
+          outline: 1px solid #999;
+          outline-offset: 2px;
+        }
       `}
     >
       {windows.length > 0 && (
-        <div css={css`
+        <div
+        tabIndex={0}
+        ref={containerRef}
+        css={css`
           padding: 10px;
-          border-bottom: 1px solid #aaa;
           margin-bottom: 10px;
         `}>
           {windows.map((item, index) => (
-            <WindowItem 
-              key={item.id} 
-              data={item} 
+            <WindowItem
+              key={item.id}
+              data={item}
               isSelected={index === selectedIndex}
               onClick={() => {
                 openWindow(item)
@@ -111,6 +116,8 @@ const Popup = () => {
         </div>
       )}
 
+      <hr/>
+
       <div css={css`
         display: flex;
         flex-direction: column;
@@ -118,17 +125,16 @@ const Popup = () => {
         align-items: center;
         padding: 5px 0;
         min-width: 220px;
-
-        button {
-          margin: 8px;
-        }
+        gap: 8px;
       `}>
         <button css={textButton}
+          tabIndex={1}
           onClick={openOptionsPage}
         >
           Settings
         </button>
         <button css={textButton}
+          tabIndex={2}
           onClick={async () => {
             const win = await createWindowFromCurrent()
             setSettings(prevState => {
