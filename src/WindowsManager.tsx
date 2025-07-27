@@ -112,6 +112,10 @@ const rowCols = css`
 `
 const cols2 = css`
   grid-template-columns: repeat(2, 1fr);
+  
+  @media (max-width: 1000px) {
+    grid-template-columns: 1fr;
+  }
 `
 
 interface WindowItemProps {
@@ -272,6 +276,13 @@ const WindowItem = ({data, defaultId, windows, context, onDataChanged, onDelete,
           display: flex;
           justify-content: space-between;
           margin-bottom: 8px;
+          flex-wrap: wrap;
+          gap: 8px;
+          
+          @media (max-width: 1000px) {
+            justify-content: flex-start;
+          }
+          
           * {
             font-size: 12px;
           }
