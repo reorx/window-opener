@@ -1,70 +1,29 @@
 import { WindowData, Context } from '../window';
 
 export interface ErrorContext {
-  windowData: {
-    id: string;
-    name: string;
-    url: string;
-    type: string;
-    focused: boolean;
-    default: boolean;
-    expressions: {
-      left: string;
-      top: string;
-      width: string;
-      height: string;
-    };
-  };
+  windowData: WindowData;
   context: Context;
-  currentWindow: any;
-  calculatedFigures: any;
+  chromeWindow: any;
+  figures: any;
   createArgs: any;
-  error: {
-    name: string;
-    message: string;
-    stack: string;
-  };
-  timestamp: string;
+  error: Error;
 }
 
 export function createErrorContext(
-  data: WindowData,
+  windowData: WindowData,
   context: Context,
   chromeWindow: chrome.windows.Window | null,
   figures: any,
   createArgs: any,
-  err: Error
+  error: Error
 ): ErrorContext {
   return {
-    windowData: {
-      id: data.id,
-      name: data.name,
-      url: data.url,
-      type: data.type,
-      focused: data.focused,
-      default: data.default,
-      expressions: {
-        left: data.left,
-        top: data.top,
-        width: data.width,
-        height: data.height
-      },
-    },
+    windowData,
     context,
-    currentWindow: chromeWindow ? {
-      left: chromeWindow.left,
-      top: chromeWindow.top,
-      width: chromeWindow.width,
-      height: chromeWindow.height
-    } : 'Failed to get current window',
-    calculatedFigures: figures,
-    createArgs: createArgs,
-    error: {
-      name: err.name || 'Unknown Error',
-      message: err.message || String(err),
-      stack: err.stack || 'No stack trace available'
-    },
-    timestamp: new Date().toISOString()
+    chromeWindow,
+    figures,
+    createArgs,
+    error,
   };
 }
 
@@ -169,14 +128,32 @@ export function createEnhancedErrorHtml(errorContext: ErrorContext): string {
   <div class="container">
     <h1>⚠️ Window Opener Error Report</h1>
 
-    <div class="error-summary">
-      <strong>${errorContext.error.name}:</strong> ${errorContext.error.message}
+    <div class="section">
+      <h2>🐛 Error Details</h2>
+      <div class="error-summary">
+        <strong>${errorContext.error.name}:</strong> ${errorContext.error.message}
+      </div>
+      
+      <h3>Stack Trace</h3>
+      <div class="code-block">${errorContext.error.stack || 'No stack trace available'}</div>
     </div>
 
     <div class="section">
-      <h2>📋 Window Configuration</h2>
+      <h2>⚙️ Chrome API Arguments</h2>
+      <p>The following arguments were passed to <span class="highlight">chrome.windows.create()</span>:</p>
+      <div class="code-block">${formatJson(errorContext.createArgs)}</div>
+    </div>
+
+    <div class="section">
+      <h2>🔢 Calculated Figures</h2>
+      <div class="code-block">${formatJson(errorContext.figures)}</div>
+    </div>
+
+    <div class="section">
+      <h2>📋 Window Data</h2>
       <table>
         <tr><th>Property</th><th>Value</th></tr>
+        <tr><td>ID</td><td class="value">${errorContext.windowData.id}</td></tr>
         <tr><td>Name</td><td class="value">${errorContext.windowData.name || '(empty)'}</td></tr>
         <tr><td>URL</td><td class="value">${errorContext.windowData.url || '(empty - blank page)'}</td></tr>
         <tr><td>Type</td><td class="value">${errorContext.windowData.type}</td></tr>
@@ -189,58 +166,41 @@ export function createEnhancedErrorHtml(errorContext: ErrorContext): string {
         <tr><th>Property</th><th>Expression</th></tr>
         <tr>
           <td>Left</td>
-          <td class="value">${errorContext.windowData.expressions.left || '(empty)'}</td>
+          <td class="value">${errorContext.windowData.left || '(empty)'}</td>
         </tr>
         <tr>
           <td>Top</td>
-          <td class="value">${errorContext.windowData.expressions.top || '(empty)'}</td>
+          <td class="value">${errorContext.windowData.top || '(empty)'}</td>
         </tr>
         <tr>
           <td>Width</td>
-          <td class="value">${errorContext.windowData.expressions.width || '(empty)'}</td>
+          <td class="value">${errorContext.windowData.width || '(empty)'}</td>
         </tr>
         <tr>
           <td>Height</td>
-          <td class="value">${errorContext.windowData.expressions.height || '(empty)'}</td>
+          <td class="value">${errorContext.windowData.height || '(empty)'}</td>
         </tr>
       </table>
     </div>
 
     <div class="section">
       <h2>🖥️ Context Information</h2>
+      
+      <h3>Current Chrome Window</h3>
+      <div class="code-block">${formatJson(errorContext.chromeWindow)}</div>
 
-      <h3>Static Context (Screen Info)</h3>
+      <h3>Context Variables</h3>
       <table>
-        <tr><th>Property</th><th>Value</th></tr>
+        <tr><th>Variable</th><th>Value</th></tr>
         <tr><td>Screen Width</td><td class="value">${errorContext.context.screenWidth}px</td></tr>
         <tr><td>Screen Height</td><td class="value">${errorContext.context.screenHeight}px</td></tr>
+        <tr><td>Window Width</td><td class="value">${errorContext.context.windowWidth}px</td></tr>
+        <tr><td>Window Height</td><td class="value">${errorContext.context.windowHeight}px</td></tr>
+        <tr><td>Window Left</td><td class="value">${errorContext.context.windowLeft}px</td></tr>
+        <tr><td>Window Top</td><td class="value">${errorContext.context.windowTop}px</td></tr>
         <tr><td>X Offset</td><td class="value">${errorContext.context.xOffset}px</td></tr>
         <tr><td>Y Offset</td><td class="value">${errorContext.context.yOffset}px</td></tr>
       </table>
-
-      <h3>Current Window</h3>
-      <div class="code-block">${formatJson(errorContext.currentWindow)}</div>
-    </div>
-
-    <div class="section">
-      <h2>🔢 Calculated Results</h2>
-
-      <h3>Figure Calculation Results</h3>
-      <div class="code-block">${formatJson(errorContext.calculatedFigures)}</div>
-
-      <h3>Chrome API Arguments</h3>
-      <p>The following arguments were passed to <span class="highlight">chrome.windows.create()</span>:</p>
-      <div class="code-block">${formatJson(errorContext.createArgs)}</div>
-    </div>
-
-    <div class="section">
-      <h2>🐛 Error Details</h2>
-
-      <h3>Error Message</h3>
-      <div class="code-block">${errorContext.error.message}</div>
-
-      <h3>Stack Trace</h3>
-      <div class="code-block">${errorContext.error.stack}</div>
     </div>
 
     <div class="section">
@@ -255,7 +215,7 @@ export function createEnhancedErrorHtml(errorContext: ErrorContext): string {
     </div>
 
     <div class="timestamp">
-      Error occurred at: ${errorContext.timestamp}
+      Error occurred at: ${new Date().toISOString()}
     </div>
   </div>
 </body>
@@ -271,7 +231,7 @@ export async function showErrorInNewWindow(
   err: Error
 ): Promise<void> {
   const errorContext = createErrorContext(data, context, chromeWindow, figures, createArgs, err);
-  
+
   console.error('Window creation failed:', errorContext);
 
   const [width, height] = [Math.floor(context.screenWidth / 2), Math.floor(context.screenHeight * 0.7)];
