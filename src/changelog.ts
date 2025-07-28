@@ -7,19 +7,28 @@ export interface ChangelogEntry {
 
 export const changelog: ChangelogEntry[] = [
   {
+    version: '1.4.0',
+    date: '2025-07-28',
+    changes: [
+      'Added screen and window absolute position properties to Context for multi-monitor support',
+      'Refactored context logic - all context variables are now live calculated, no more dynamic/static distinction',
+      'Added smart figure calculation that handles dependencies and detects circular references',
+      'Enhanced variable explanations and moved tips to dedicated sidebar',
+      'Added comprehensive changelog system with automatic display on updates',
+      'Added right-click context menu "What\'s New" option to view changelog',
+    ],
+    note: '📝 **Recommended:** Due to significant changes in context calculation, it\'s recommended to delete your existing windows and recreate them from the examples in the options page for optimal positioning.'
+  },
+  {
     version: '1.3.0',
     date: '2025-07-18',
     changes: [
-      'Added screen and window absolute position properties (_windowLeftAbs, _windowTopAbs, _screenLeftAbs, _screenTopAbs) to Context for multi-monitor support',
-      'Refactored context logic - all context variables are now live calculated, no more dynamic/static distinction',
-      'Enhanced popup UI with keyboard navigation and auto-focus improvements',
-      'Added duplicate button to easily copy window configurations',
-      'Improved options page UI and fixed default window logic',
+
       'Made URL optional for windows - opens blank page if URL is empty',
-      'Added smart figure calculation that handles dependencies and detects circular references',
-      'Enhanced variable explanations and moved tips to dedicated box'
+      'Improved options page UI and fixed default window logic',
+      'Added duplicate button to easily copy window configurations',
+      'Enhanced popup UI with keyboard navigation and auto-focus improvements',
     ],
-    note: '📝 **Recommended:** Due to significant changes in context calculation, it\'s recommended to delete your existing windows and recreate them from the examples in the options page for optimal positioning.'
   },
   {
     version: '1.2.0',
