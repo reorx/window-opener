@@ -16,6 +16,7 @@ const common = {
     background: path.join(srcDir, 'background.ts'),
     popup: path.join(srcDir, 'popup.tsx'),
     options: path.join(srcDir, 'options.tsx'),
+    changelog: path.join(srcDir, 'changelog.tsx'),
   },
   output: {
     path: destDir,
@@ -94,7 +95,7 @@ function developmentConfig() {
       new ExtReloader({
         entries: {
           background: 'background',
-          extensionPage: ['options'],
+          extensionPage: ['options', 'changelog'],
         },
       }),
     ],

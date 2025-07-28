@@ -8,6 +8,41 @@ const lg = getLogger('background', colors.green)
 
 lg.log('background.ts')
 
+// Version check and changelog display
+chrome.runtime.onInstalled.addListener(async (details) => {
+  const currentVersion = chrome.runtime.getManifest().version;
+  
+  if (details.reason === 'install') {
+    lg.log('Extension installed, version:', currentVersion);
+  } else if (details.reason === 'update') {
+    const previousVersion = details.previousVersion;
+    lg.log('Extension updated from', previousVersion, 'to', currentVersion);
+    
+    // Show changelog if version has changed
+    if (previousVersion !== currentVersion) {
+      chrome.tabs.create({
+        url: chrome.runtime.getURL('changelog.html')
+      });
+    }
+  }
+
+  // Create context menu
+  chrome.contextMenus.create({
+    id: 'changelog',
+    title: 'What\'s New',
+    contexts: ['action']
+  });
+});
+
+// Context menu click handler
+chrome.contextMenus.onClicked.addListener((info, tab) => {
+  if (info.menuItemId === 'changelog') {
+    chrome.tabs.create({
+      url: chrome.runtime.getURL('changelog.html')
+    });
+  }
+});
+
 getSettings().then((settings) => {
   setActionBehavior(settings.iconAction)
 })

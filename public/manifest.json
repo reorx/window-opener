@@ -20,13 +20,15 @@
     "service_worker": "js/background.js"
   },
   "action": {
-    "default_title": "Open a window"
+    "default_title": "Open a window",
+    "default_popup": ""
   },
   "options_page": "options.html",
   "permissions": [
     "storage",
     "tabs",
     "system.display",
-    "activeTab"
+    "activeTab",
+    "contextMenus"
   ]
 }
