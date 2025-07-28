@@ -79,11 +79,10 @@ const Popup = () => {
 
   // Focus container on mount for keyboard events
   useEffect(() => {
-    //alert('containerRef: ' + containerRef.current)
     if (containerRef.current) {
       containerRef.current.focus()
     }
-  }, [])
+  }, [windows])
 
   return (
     <div
@@ -109,14 +108,12 @@ const Popup = () => {
               isSelected={index === selectedIndex}
               onClick={() => {
                 openWindow(item)
-                window.close()
+                setTimeout(() => window.close(), 100)
               }}
             />
           ))}
         </div>
       )}
-
-      <hr/>
 
       <div css={css`
         display: flex;
@@ -169,16 +166,14 @@ const WindowItem = ({data, isSelected, onClick}: {data: WindowData, isSelected: 
         max-width: 300px;
         min-width: 200px;
         font-size: 15px;
-        border: 1px solid transparent;
+        border: 2px solid transparent;
         cursor: pointer;
         ${isSelected && `
           border-color: ${themeColor};
           background-color: #eee;
-          outline: 2px solid ${themeColor};
         `}
         &:hover {
-          border-color: ${themeColor};
-          background-color: #eee;
+          background-color: #ddd;
         }
       `}
       onClick={onClick}
@@ -197,7 +192,8 @@ const WindowItem = ({data, isSelected, onClick}: {data: WindowData, isSelected: 
         {data.default && <span className='star'>★</span>}
       </div>
       <div css={css`
-        font-size: 13px;
+        font-size: 12px;
+        margin-top: 3px;
         color: #999;
       `}>{domain}</div>
     </div>
